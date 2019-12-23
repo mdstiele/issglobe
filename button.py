@@ -46,3 +46,7 @@ def chkChangeMode(timer, currMode):
       currMode = answer
     print('Mode updated to %s' % int(currMode))
     return currMode
+
+# def changeModeTwo(currMode)
+#   modeList = [1,2,3,0]
+#   currMode = modeList[currMode]

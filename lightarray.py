@@ -9,7 +9,9 @@ import socket
 from threading import Timer
 import select
 import sys
-from ledcontrol import scrollup, scrolldown, protectionShow
+from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll
+from colorzero import Color
+import logging
 
 degrees_per_radian = 180.0 / math.pi
 
@@ -20,10 +22,10 @@ greenwich.lat = "0"
 greenwich.lon = "0"
 
 sunLightRadius = ephem.earth_radius/1000 #earth radius should mean about 50% coverage
-moonLightRadius = (ephem.earth_radius/1000)*(1/2.25) #1/3 earth radius
-sunLightColor = "Color(255,255,200)" #yellow white
-moonLightColor = "Color(0,255,255)" #light blue
-issLightColor = "Color(255,0,0)" #red
+moonLightRadius = (ephem.earth_radius/1000)*(1/3) #1/3 earth radius
+sunLightColor = Color(255,255,200) #yellow white
+moonLightColor = Color(0,255,255) #light blue
+issLightColor = Color(255,0,0) #red
 totalNumLed = 40 #total number of leds on system
 statusLed = 41 #number in chain of the status led
 currMode = 0 #the current mode, starts at 0
@@ -88,8 +90,7 @@ def getClosestPoint(lat, lon, pointArray):
       point = pointArray.index(i)
       coord = str(x)+","+str(y)
       minDist = dist
-    # print(pointArray.index(i), " : ", dist)
-  print("clostest point is: ", point , " with distance of: ", minDist)
+  logging.info("clostest point is: {} with distance of: {}".format(point, minDist))
   return point
 
 def getClosestPoints(lat, lon, pointArray, amount):
@@ -112,9 +113,8 @@ def getClosestPoints(lat, lon, pointArray, amount):
     topDistList.append(closePointStr)
     del tempPointArray[point]
 
-  print("---")
   for i in topDistList:
-    print(i)
+    logging.info("closest point ", topDistList.index(i), i)
   return topDistList
 
 def calcDist(lat1, lon1, lat2, lon2):
@@ -153,7 +153,7 @@ def lightMoon(pointArray):
   moonlat = moon.hlat /degree
   # print(moonLightRadius)
   lightsArray = getPointWithinDist(moonlat, moonlon, moonLightRadius,  pointArray)
-  print("moon: ", moonlat, moonlon)
+  logging.info("moon: {} {}".format(moonlat, moonlon))
   moonArray = []
   for i in lightsArray:
     moonArray.append((i, sunLightColor))
@@ -169,23 +169,23 @@ def lightIss(pointArray):
   iss.compute()
   isslong = iss.sublong / degree
   isslat = iss.sublat / degree
-  print("Iss: %s %s" % (isslat, isslong))
+  logging.info("Iss: %s %s" % (isslat, isslong))
   # getClosestPoints(isslat, isslong, pointArray, 3)
   lightsArray = [(getClosestPoint(isslat, isslong, pointArray),issLightColor)]
   return lightsArray
 
 class TimeoutExpired(Exception):
-    pass
+  pass
 
 def input_with_timeout(prompt, timeout):
-    sys.stdout.write(prompt)
-    sys.stdout.flush()
-    ready, _, _ = select.select([sys.stdin], [],[], timeout)
-    if ready:
-        return sys.stdin.readline().rstrip('\n') # expect stdin to be line-buffered
-    raise TimeoutExpired
+  sys.stdout.write(prompt)
+  sys.stdout.flush()
+  ready, _, _ = select.select([sys.stdin], [],[], timeout)
+  if ready:
+    return sys.stdin.readline().rstrip('\n') # expect stdin to be line-buffered
+  raise TimeoutExpired
 
-def runMode(currMode):
+def runMode(currMode, strip):
   lightsArray = []
   led_coords = getLedCoords()
   if (int(currMode) == 0):
@@ -211,7 +211,12 @@ def runMode(currMode):
   else:
     currMode = 0
 
-  protectionShow(lightsArray)
+  colorSetAll(strip, Color(0,0,0))
+  for i in lightsArray:
+    logging.debug(i)
+    strip.setPixelColor(i[0], i[1])
+
+  protectionShow(strip)
   # print(lightsArray)
   return currMode
 
@@ -219,20 +224,22 @@ def chkChangeMode(timer, currMode):
   try:
     answer = input_with_timeout("Mode:", timer)
   except TimeoutExpired:
-    print("Cycle Complete: Mode staying at %d" % int(currMode))
+    logging.debug("Cycle Complete: Mode staying at %d" % int(currMode))
     return currMode
   else:
     if (int(answer) >= 0) and (int(answer) <= 4):
       currMode = answer
-    print('Mode updated to %s' % int(currMode))
+    logging.info('Mode updated to %s' % int(currMode))
     return currMode
 
-def changeMode():
+def changeMode(currMode):
   #call this when button press
-  if (int(currMode) >= 3):
-    currMode = 0
-  else:
-    currMode += 1
+  modeList = [1,2,3,0]
+  currMode = modeList[currMode]
+  # if (int(currMode) >= 3):
+  #   currMode = 0
+  # else:
+  #   currMode += 1
   
 def createHeightArray(pointArray):
   heightArray = []
@@ -240,9 +247,9 @@ def createHeightArray(pointArray):
     heightArray.append(i[1])
   return heightArray
 
-def systemOn():
+def systemOn(strip):
   led_coords = getLedCoords()
-  scrollup(led_coords)
+  scrollup(strip, led_coords)
 
 def systemOff():
   led_coords = getLedCoords()
