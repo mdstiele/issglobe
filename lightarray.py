@@ -9,9 +9,9 @@ import socket
 from threading import Timer
 import select
 import sys
-from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll
-from colorzero import Color
+from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, colorAll, rainbowCycle
 import logging
+from neopixel import Color
 
 degrees_per_radian = 180.0 / math.pi
 
@@ -21,11 +21,11 @@ greenwich = ephem.Observer()
 greenwich.lat = "0"
 greenwich.lon = "0"
 
-sunLightRadius = ephem.earth_radius/1000 #earth radius should mean about 50% coverage
-moonLightRadius = (ephem.earth_radius/1000)*(1/3) #1/3 earth radius
+sunLightRadius = ephem.earth_radius/1000 * 1.5 #earth radius should mean about 50% coverage
+moonLightRadius = (ephem.earth_radius/1000)*.33 #1/3 earth radius
 sunLightColor = Color(255,255,200) #yellow white
-moonLightColor = Color(0,255,255) #light blue
-issLightColor = Color(255,0,0) #red
+moonLightColor = Color(255,0,255) #light blue
+issLightColor = Color(0,255,0) #red
 totalNumLed = 40 #total number of leds on system
 statusLed = 41 #number in chain of the status led
 currMode = 0 #the current mode, starts at 0
@@ -36,7 +36,7 @@ currMode = 0 #the current mode, starts at 0
 # // - NeoPixel strip's DATA-IN should pass through a 300-500 OHM RESISTOR.
 
 def getLedCoords():
-  f = open("ledcoords.txt", "r")
+  f = open("/home/pi/issglobe/ledcoords.txt", "r")
   flines = f.read().split("\n")
   outputList = []
   for i in flines:
@@ -70,13 +70,15 @@ def is_connected():
 
 def getPointWithinDist(lat, lon, distance, pointArray):
   lights = []
+#   print distance
   for i in pointArray:
     x = i[0]
     y = i[1]
     dist = calcDist(lat, lon, x, y)
-    # print(dist)
+#     print(i, " : ", dist)
     if dist < distance:
       lights.append(pointArray.index(i))
+#   print lights
   return lights
 
 def getClosestPoint(lat, lon, pointArray):
@@ -90,7 +92,12 @@ def getClosestPoint(lat, lon, pointArray):
       point = pointArray.index(i)
       coord = str(x)+","+str(y)
       minDist = dist
+#       print (point, dist)
+#       print (lat, lon, x, y)
   logging.info("clostest point is: {} with distance of: {}".format(point, minDist))
+#   print (lat,lon,pointArray[point][0], pointArray[point][1])
+#   print (point, pointArray[point], minDist)
+  
   return point
 
 def getClosestPoints(lat, lon, pointArray, amount):
@@ -126,6 +133,7 @@ def calcDist(lat1, lon1, lat2, lon2):
   lon2 = radians(lon2)
   dlon = (abs(lon2 - lon1))
   dlat = (abs(lat2 - lat1))
+#   print (dlon, dlat)
   a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
   c = 2 * atan2(sqrt(a), sqrt(1 - a))
   distance = R * c
@@ -156,7 +164,7 @@ def lightMoon(pointArray):
   logging.info("moon: {} {}".format(moonlat, moonlon))
   moonArray = []
   for i in lightsArray:
-    moonArray.append((i, sunLightColor))
+    moonArray.append((i, moonLightColor))
     # print("moon: ", pointArray[i])
   return moonArray
 
@@ -172,6 +180,7 @@ def lightIss(pointArray):
   logging.info("Iss: %s %s" % (isslat, isslong))
   # getClosestPoints(isslat, isslong, pointArray, 3)
   lightsArray = [(getClosestPoint(isslat, isslong, pointArray),issLightColor)]
+#   lightsArray = [(getClosestPoint(37, 160, pointArray),issLightColor)]
   return lightsArray
 
 class TimeoutExpired(Exception):
@@ -208,6 +217,8 @@ def runMode(currMode, strip):
       lightsArray.append(i)
     for i in lightIss(led_coords):
       lightsArray.append(i)
+  elif (int(currMode) == 4):
+      rainbowCycle(strip)
   else:
     currMode = 0
 
@@ -234,8 +245,9 @@ def chkChangeMode(timer, currMode):
 
 def changeMode(currMode):
   #call this when button press
-  modeList = [1,2,3,0]
+  modeList = [1,2,3,4,0]
   currMode = modeList[currMode]
+  return currMode
   # if (int(currMode) >= 3):
   #   currMode = 0
   # else:
@@ -251,6 +263,6 @@ def systemOn(strip):
   led_coords = getLedCoords()
   scrollup(strip, led_coords)
 
-def systemOff():
+def systemOff(strip):
   led_coords = getLedCoords()
-  scrolldown(led_coords)
+  scrolldown(strip, led_coords)
