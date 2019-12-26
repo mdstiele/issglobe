@@ -47,6 +47,7 @@ def updateIssTleData():
   # check internet connection
   # update file if connection
   # if no connection use data already in file
+  logging.info("Attempting to update ISS TLE data")
   if is_connected():
     http = urllib3.PoolManager()
     r = http.request('GET', 'http://www.celestrak.com/NORAD/elements/stations.txt')
@@ -63,8 +64,11 @@ def is_connected():
     # connect to the host -- tells us if the host is actually
     # reachable
     socket.create_connection(("www.celestrak.com", 80))
+    logging.info("Connection to www.celestrak.com:80 succesfull. Will now get fresh ISS TLE... YUM")
     return True
-  except OSError:
+  except Exception as e:
+    logging.warning(e)
+    logging.info("Connection to  www.celestrak.com:80 was unsuccesfull. will use past TLE data")
     pass
   return False
 

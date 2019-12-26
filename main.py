@@ -26,7 +26,7 @@ global currMode
 def modeButtonPressed():
     global currMode
     currMode = changeMode(currMode)
-    
+
 def modeButtonHeld():
     print("shutting down")
 
@@ -36,6 +36,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-c', '--clear', action='store_true', help='clear the display on exit')
+ #   parser.add_argument(
+ #       '-v', '--Verbose', action='store_true' help="when set will output logger ")
     args = parser.parse_args()
 
     # Create NeoPixel object with appropriate configuration.
@@ -44,7 +46,9 @@ if __name__ == '__main__':
     strip.begin()
 
     modeButton = Button(BTN_PIN, bounce_time=.5, hold_time=7)
-    
+
+#    logging.Logger.setLevel("WARNING")
+
     print ('Press Ctrl-C to quit.')
     if not args.clear:
       print('Use "-c" argument to clear LEDs on exit')
