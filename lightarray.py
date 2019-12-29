@@ -1,15 +1,15 @@
 import urllib3
 from math import sin, cos, sqrt, atan2, radians
 import math
-import time
+#import time
 from datetime import datetime
 import ephem
 from ephem import degree
 import socket
-from threading import Timer
+#from threading import Timer
 import select
 import sys
-from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, colorAll, rainbowCycle
+from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, rainbowCycle
 import logging
 from neopixel import Color
 
@@ -47,7 +47,7 @@ def updateIssTleData():
   # check internet connection
   # update file if connection
   # if no connection use data already in file
-  logging.info("Attempting to update ISS TLE data")
+  logging.debug("Attempting to update ISS TLE data")
   if is_connected():
     http = urllib3.PoolManager()
     r = http.request('GET', 'http://www.celestrak.com/NORAD/elements/stations.txt')
@@ -64,11 +64,11 @@ def is_connected():
     # connect to the host -- tells us if the host is actually
     # reachable
     socket.create_connection(("www.celestrak.com", 80))
-    logging.info("Connection to www.celestrak.com:80 succesfull. Will now get fresh ISS TLE... YUM")
+    logging.debug("Connection to www.celestrak.com:80 succesfull. Will now get fresh ISS TLE... YUM")
     return True
   except Exception as e:
     logging.warning(e)
-    logging.info("Connection to  www.celestrak.com:80 was unsuccesfull. will use past TLE data")
+    logging.warning("Connection to  www.celestrak.com:80 was unsuccesfull. will use past TLE data")
     pass
   return False
 
@@ -94,11 +94,11 @@ def getClosestPoint(lat, lon, pointArray):
     dist = calcDist(lat, lon, x, y)
     if dist < minDist:
       point = pointArray.index(i)
-      coord = str(x)+","+str(y)
+#      coord = str(x)+","+str(y)
       minDist = dist
 #       print (point, dist)
 #       print (lat, lon, x, y)
-  logging.info("clostest point is: {} with distance of: {}".format(point, minDist))
+  logging.debug("clostest point is: {} with distance of: {}".format(point, minDist))
 #   print (lat,lon,pointArray[point][0], pointArray[point][1])
 #   print (point, pointArray[point], minDist)
   
@@ -125,7 +125,7 @@ def getClosestPoints(lat, lon, pointArray, amount):
     del tempPointArray[point]
 
   for i in topDistList:
-    logging.info("closest point ", topDistList.index(i), i)
+    logging.debug("closest point ", topDistList.index(i), i)
   return topDistList
 
 def calcDist(lat1, lon1, lat2, lon2):
@@ -165,7 +165,7 @@ def lightMoon(pointArray):
   moonlat = moon.hlat /degree
   # print(moonLightRadius)
   lightsArray = getPointWithinDist(moonlat, moonlon, moonLightRadius,  pointArray)
-  logging.info("moon: {} {}".format(moonlat, moonlon))
+  logging.debug("moon: {} {}".format(moonlat, moonlon))
   moonArray = []
   for i in lightsArray:
     moonArray.append((i, moonLightColor))
@@ -181,22 +181,11 @@ def lightIss(pointArray):
   iss.compute()
   isslong = iss.sublong / degree
   isslat = iss.sublat / degree
-  logging.info("Iss: %s %s" % (isslat, isslong))
+  logging.debug("Iss: %s %s" % (isslat, isslong))
   # getClosestPoints(isslat, isslong, pointArray, 3)
   lightsArray = [(getClosestPoint(isslat, isslong, pointArray),issLightColor)]
 #   lightsArray = [(getClosestPoint(37, 160, pointArray),issLightColor)]
   return lightsArray
-
-class TimeoutExpired(Exception):
-  pass
-
-def input_with_timeout(prompt, timeout):
-  sys.stdout.write(prompt)
-  sys.stdout.flush()
-  ready, _, _ = select.select([sys.stdin], [],[], timeout)
-  if ready:
-    return sys.stdin.readline().rstrip('\n') # expect stdin to be line-buffered
-  raise TimeoutExpired
 
 def runMode(currMode, strip):
   lightsArray = []
@@ -228,40 +217,17 @@ def runMode(currMode, strip):
 
   colorSetAll(strip, Color(0,0,0))
   for i in lightsArray:
-    logging.debug(i)
     strip.setPixelColor(i[0], i[1])
 
   protectionShow(strip)
   # print(lightsArray)
   return currMode
 
-def chkChangeMode(timer, currMode):
-  try:
-    answer = input_with_timeout("Mode:", timer)
-  except TimeoutExpired:
-    logging.debug("Cycle Complete: Mode staying at %d" % int(currMode))
-    return currMode
-  else:
-    if (int(answer) >= 0) and (int(answer) <= 4):
-      currMode = answer
-    logging.info('Mode updated to %s' % int(currMode))
-    return currMode
-
 def changeMode(currMode):
   #call this when button press
   modeList = [1,2,3,4,0]
   currMode = modeList[currMode]
   return currMode
-  # if (int(currMode) >= 3):
-  #   currMode = 0
-  # else:
-  #   currMode += 1
-  
-def createHeightArray(pointArray):
-  heightArray = []
-  for i in pointArray:
-    heightArray.append(i[1])
-  return heightArray
 
 def systemOn(strip):
   led_coords = getLedCoords()

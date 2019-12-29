@@ -1,5 +1,4 @@
 from neopixel import Color
-# import argparse
 import time
 import logging
 
@@ -35,15 +34,10 @@ def scrollup(strip, pointArray, color=Color(255, 0, 0), wait_ms=1):
       p=q[1]
       if ((j-10) <= p <= j):
         strip.setPixelColor(pointArray.index(q), color)
-        # print(pointArray.index(q), q, color)
-        # strip.setPixelColor(heightArray.index(q), color)
       else:
         strip.setPixelColor(pointArray.index(q), Color(0,0,0))
-        # strip.setPixelColor(heightArray.index(q), color(0,0,0))
-    # strip.show()
     protectionShow(strip)
     logging.debug("scrollup cycle: {}".format(j))
-    # time.sleep(wait_ms/1000.0)
 
 def scrolldown(strip, pointArray, color=Color(0, 255, 0), wait_ms=50):
   for j in range(90, -80, -10):
@@ -51,16 +45,11 @@ def scrolldown(strip, pointArray, color=Color(0, 255, 0), wait_ms=50):
       p=q[1]
       if ((j-10) <= p <= j):
         strip.setPixelColor(pointArray.index(q), color)
-        # print(pointArray.index(q), q, color)
-        # strip.setPixelColor(heightArray.index(q), color)
       else:
         strip.setPixelColor(pointArray.index(q), Color(0,0,0))
-        # strip.setPixelColor(heightArray.index(q), color(0,0,0))
-    # strip.show()
     protectionShow(strip)
     time.sleep(wait_ms/1000.0)
     logging.debug("scrolldown cycle: {}".format(j))
-
 
 def theaterChase(strip, color, wait_ms=50, iterations=10):
   """Movie theater light style chaser animation."""
@@ -93,17 +82,13 @@ def wheel(pos):
         return Color(0, pos * 3, 255 - pos * 3)
 
 def protectionShow(strip):
-  #switch to import and use lenth of strip
-  #use strip.getpixels()
-  #count non 0 colors
   count = 0
   for i in range(strip.numPixels()):
     if (strip.getPixelColor(i) != Color(0,0,0)):
       count += 1
-      # strip.setPixelColor(i, color)
 
   if count <= maxLedOn:
-    logging.info("Protection show: {} LEDs on".format(count))
+    logging.debug("Protection show: {} LEDs on".format(count))
     strip.show()
   else:
     logging.error("{} LEDs is over threshold, overload prevention activated".format(count))

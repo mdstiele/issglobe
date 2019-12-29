@@ -1,13 +1,13 @@
 # from ledcontrol import systemOn
-from lightarray import runMode, chkChangeMode, systemOn, systemOff, currMode, changeMode, calcDist
-from ledcontrol import colorWipe, colorSet, colorAll
+from lightarray import runMode, systemOn, systemOff, currMode, changeMode
+from ledcontrol import colorAll
 from gpiozero import Button
-from neopixel import *
+from neopixel import Color, Adafruit_NeoPixel
 import argparse
 import logging
 from time import sleep
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # LED strip configuration:
 LED_COUNT      = 400      # Number of LED pixels.
@@ -29,6 +29,8 @@ def modeButtonPressed():
 
 def modeButtonHeld():
     print("shutting down")
+    systemOff(strip)
+    colorAll(strip, Color(0, 0, 0))
 
 # Main program logic follows:
 if __name__ == '__main__':
@@ -54,29 +56,14 @@ if __name__ == '__main__':
       print('Use "-c" argument to clear LEDs on exit')
 
     try:
-#         print calcDist(37, -30.4, 160, 146.25)
-#         colorSet(strip, Color(255,0,0),1)
         systemOn(strip)
         modeButton.when_pressed = modeButtonPressed
-        # colorSet(strip, Color(255, 0, 0), 5)
-        # colorSet(strip, Color(255, 0, 0), 6)
-        # colorSetAll(strip, Color(0,0,0))
+        modeButton.when_held = modeButtonHeld
 
         while True:
             currMode = runMode(currMode, strip)
             sleep(5)
-#             currMode = chkChangeMode(10, currMode)
-        # while True:
-        # print ('Color wipe animations.')
-        # colorWipe(strip, Color(255, 0, 0))  # Red wipe
-        # colorWipe(strip, Color(0, 255, 0))  # Blue wipe
-        # colorWipe(strip, Color(0, 0, 255))  # Green wipe
-        # print ('Theater chase animations.')
-        # theaterChase(strip, Color(127, 127, 127))  # White theater chase
-        # theaterChase(strip, Color(127,   0,   0))  # Red theater chase
-        # theaterChase(strip, Color(  0,   0, 127))  # Blue theater chase
 
     except KeyboardInterrupt:
         if args.clear:
-            systemOff(strip)
-            colorAll(strip, Color(0, 0, 0))
+            modeButtonHeld()
