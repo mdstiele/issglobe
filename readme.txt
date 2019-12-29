@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "runner"
+name = "issglobe"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Michael Stieler <mdstieler@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
