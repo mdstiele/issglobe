@@ -28,7 +28,7 @@ moonLightColor = Color(255,0,255) #light blue
 issLightColor = Color(0,255,0) #red
 totalNumLed = 40 #total number of leds on system
 statusLed = 41 #number in chain of the status led
-currMode = 0 #the current mode, starts at 0
+currMode = 4 #the current mode, starts at 0
 
 # NEOPIXEL BEST PRACTICES for most reliable operation:
 # // - Add 1000 uF CAPACITOR between NeoPixel strip's + and - connections.
@@ -213,7 +213,7 @@ def runMode(currMode, strip):
     for i in lightIss(led_coords):
       lightsArray.append(i)
   elif (int(currMode) == 4):
-      rainbowColumnCycle(strip, led_coords)
+      rainbowColumnCycle(strip, getColumnArray(led_coords))
 
   colorSetAll(strip, Color(0,0,0))
   for i in lightsArray:

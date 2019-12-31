@@ -37,7 +37,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-c', '--clear', action='store_true', help='clear the display on exit')
     parser.add_argument(
-        '-v', '--verbose', action='store_true' help="when set will sre logger to DEBUG otherwise will be WARNING")
+        '-v', '--verbose', action='store_true', help='when set will sre logger to DEBUG otherwise will be WARNING')
     args = parser.parse_args()
 
     # Create NeoPixel object with appropriate configuration.

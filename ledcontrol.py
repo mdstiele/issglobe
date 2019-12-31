@@ -31,7 +31,7 @@ def colorSet(strip, color, led):
 def scrollup(strip, pointArray, color=Color(255, 0, 0), wait_ms=1):
   for j in range(-80, 90, 10):
     for q in pointArray:
-      p=q[1]
+      p=q[0]
       if ((j-10) <= p <= j):
         strip.setPixelColor(pointArray.index(q), color)
       else:
@@ -42,7 +42,7 @@ def scrollup(strip, pointArray, color=Color(255, 0, 0), wait_ms=1):
 def scrolldown(strip, pointArray, color=Color(0, 255, 0), wait_ms=50):
   for j in range(90, -80, -10):
     for q in pointArray:
-      p=q[1]
+      p=q[0]
       if ((j-10) <= p <= j):
         strip.setPixelColor(pointArray.index(q), color)
       else:
@@ -94,8 +94,7 @@ def protectionShow(strip):
     logging.error("{} LEDs is over threshold, overload prevention activated".format(count))
     #do tests to see if can turn brightness down
 
-def rainbowColumnCycle(strip, pointArray, wait_ms=20, iterations=5):
-  columnArray = getColumnArray(pointArray)
+def rainbowColumnCycle(strip, columnArray, wait_ms=20, iterations=5):
   numColumns = 32 #32 columns
   for j in range(256*iterations):
     for i in range(len(columnArray)):
