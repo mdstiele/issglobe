@@ -7,8 +7,6 @@ import argparse
 import logging
 from time import sleep
 
-logging.basicConfig(level=logging.DEBUG)
-
 # LED strip configuration:
 LED_COUNT      = 400      # Number of LED pixels.
 LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
@@ -38,8 +36,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-c', '--clear', action='store_true', help='clear the display on exit')
- #   parser.add_argument(
- #       '-v', '--Verbose', action='store_true' help="when set will output logger ")
+    parser.add_argument(
+        '-v', '--verbose', action='store_true' help="when set will sre logger to DEBUG otherwise will be WARNING")
     args = parser.parse_args()
 
     # Create NeoPixel object with appropriate configuration.
@@ -49,11 +47,14 @@ if __name__ == '__main__':
 
     modeButton = Button(BTN_PIN, bounce_time=.5, hold_time=7)
 
-#    logging.Logger.setLevel("WARNING")
-
     print ('Press Ctrl-C to quit.')
     if not args.clear:
       print('Use "-c" argument to clear LEDs on exit')
+    
+    if args.verbose:
+      logging.basicConfig(level=logging.DEBUG)
+    else:
+      logging.basicConfig(level=logging.WARNING)
 
     try:
         systemOn(strip)
@@ -61,9 +62,74 @@ if __name__ == '__main__':
         modeButton.when_held = modeButtonHeld
 
         while True:
-            currMode = runMode(currMode, strip)
+            runMode(currMode, strip)
             sleep(5)
 
     except KeyboardInterrupt:
         if args.clear:
             modeButtonHeld()
+
+# from lightarray import getLedCoords, lightMoon, calcDist, getColumnArray #runMode, systemOn, systemOff, currMode,
+# from ledcontrol import rainbowColumnCycle
+# import logging
+# from time import sleep
+
+
+# import threading
+# import time
+# import RPi.GPIO as GPIO
+
+# GPIO.setmode(GPIO.BOARD)
+
+# class Button(threading.Thread):
+#     def __init__(self, channel):
+#         threading.Thread.__init__(self)
+#         self._pressed = False
+#         self.channel = channel
+#         GPIO.setup(self.channel, GPIO.IN)
+#         self.deamon = True
+#         self.start()
+
+#     def run(self):
+#         previous = None
+#         while 1:
+#             current = GPIO.input(self.channel)
+#             time.sleep(0.01)
+
+#             if current is False and previous is True:
+#                 self._pressed = True
+
+#                 while self._pressed:
+#                     time.sleep(0.05)
+
+#             previous = current
+
+#     def onButtonPress():
+#         print("btn presdsed")
+
+# button = Button(36)
+
+# while True:
+#     name = input('Enter a Name:')
+
+#     if name.upper() == ('Q'):
+#         break
+#     print('hello', name)
+
+#     if button.pressed():
+#         onButtonPress()
+
+
+
+# if __name__ == '__main__':
+ 
+#   logging.basicConfig(level=logging.INFO)
+#   # while True:
+#   # points = lightMoon(led_coords)
+#   # for i in points:
+#   #     print (led_coords[i[0]][0], led_coords[i[0]][1])
+#     # print (led_coords[point[0][0]])
+#     # if last != point:
+#     #   last = point
+#     # print (led_coords[point[0][0]])
+#     # sleep(5)

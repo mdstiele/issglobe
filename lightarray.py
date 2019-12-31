@@ -9,7 +9,7 @@ import socket
 #from threading import Timer
 import select
 import sys
-from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, rainbowCycle
+from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, rainbowColumnCycle
 import logging
 from neopixel import Color
 
@@ -41,7 +41,7 @@ def getLedCoords():
   outputList = []
   for i in flines:
     outputList.append(eval(i))
-  return outputList
+  return outputList #0-399
 
 def updateIssTleData():
   # check internet connection
@@ -61,8 +61,7 @@ def updateIssTleData():
 
 def is_connected():
   try:
-    # connect to the host -- tells us if the host is actually
-    # reachable
+    # connect to the host -- tells us if the host is actually reachable
     socket.create_connection(("www.celestrak.com", 80))
     logging.debug("Connection to www.celestrak.com:80 succesfull. Will now get fresh ISS TLE... YUM")
     return True
@@ -74,31 +73,32 @@ def is_connected():
 
 def getPointWithinDist(lat, lon, distance, pointArray):
   lights = []
-#   print distance
-  for i in pointArray:
+  for i in pointArray: #pointarray = 0-399
     x = i[0]
     y = i[1]
     dist = calcDist(lat, lon, x, y)
-#     print(i, " : ", dist)
     if dist < distance:
       lights.append(pointArray.index(i))
-#   print lights
   return lights
 
 def getClosestPoint(lat, lon, pointArray):
   point = 0
   minDist = 100000
   for i in pointArray:
+    # print(i)
     x = i[0]
     y = i[1]
+    # print (lat, lon, x, y)
     dist = calcDist(lat, lon, x, y)
+    # print (dist)
+    # print("{},{},{}".format(x,y,round(dist,0)))
     if dist < minDist:
       point = pointArray.index(i)
 #      coord = str(x)+","+str(y)
       minDist = dist
 #       print (point, dist)
 #       print (lat, lon, x, y)
-  logging.debug("clostest point is: {} with distance of: {}".format(point, minDist))
+  logging.debug("clostest point is: {}: ({}) with distance of: {}".format(point, pointArray[point], minDist))
 #   print (lat,lon,pointArray[point][0], pointArray[point][1])
 #   print (point, pointArray[point], minDist)
   
@@ -114,7 +114,7 @@ def getClosestPoints(lat, lon, pointArray, amount):
       x = i[0]
       y = i[1]
       dist = calcDist(lat, lon, x, y)
-      # print(dist)
+      # print(x,y,dist)
       if dist < minDist:
         point = tempPointArray.index(i)
         coord = str(x)+","+str(y)
@@ -129,6 +129,7 @@ def getClosestPoints(lat, lon, pointArray, amount):
   return topDistList
 
 def calcDist(lat1, lon1, lat2, lon2):
+
   # approximate radius of earth in km
   R = (ephem.earth_radius/1000)
   lat1 = radians(lat1)
@@ -141,6 +142,7 @@ def calcDist(lat1, lon1, lat2, lon2):
   a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
   c = 2 * atan2(sqrt(a), sqrt(1 - a))
   distance = R * c
+
   return distance
 
 def lightSun(pointArray):
@@ -184,7 +186,7 @@ def lightIss(pointArray):
   logging.debug("Iss: %s %s" % (isslat, isslong))
   # getClosestPoints(isslat, isslong, pointArray, 3)
   lightsArray = [(getClosestPoint(isslat, isslong, pointArray),issLightColor)]
-#   lightsArray = [(getClosestPoint(37, 160, pointArray),issLightColor)]
+  # lightsArray = [(getClosestPoint(37, 160, pointArray),issLightColor)]
   return lightsArray
 
 def runMode(currMode, strip):
@@ -211,17 +213,12 @@ def runMode(currMode, strip):
     for i in lightIss(led_coords):
       lightsArray.append(i)
   elif (int(currMode) == 4):
-      rainbowCycle(strip)
-  else:
-    currMode = 0
+      rainbowColumnCycle(strip, led_coords)
 
   colorSetAll(strip, Color(0,0,0))
   for i in lightsArray:
     strip.setPixelColor(i[0], i[1])
-
   protectionShow(strip)
-  # print(lightsArray)
-  return currMode
 
 def changeMode(currMode):
   #call this when button press
@@ -236,3 +233,11 @@ def systemOn(strip):
 def systemOff(strip):
   led_coords = getLedCoords()
   scrolldown(strip, led_coords)
+
+def getColumnArray(pointArray):
+  #get array of points with each (point,column)
+  columns = [0,11.25,22.5,33.75,45,56.25,67.5,78.75,90,101.25,112.5,123.75,135,146.25,157.5,168.75,180,191.25,202.5,213.75,225,236.25,247.5,258.75,270,281.25,292.5,303.75,315,326.25,337.5,348.75]
+  columnArray = []
+  for j in pointArray:
+    columnArray.append((pointArray.index(j), columns.index(j[1])))
+  return columnArray

@@ -93,3 +93,12 @@ def protectionShow(strip):
   else:
     logging.error("{} LEDs is over threshold, overload prevention activated".format(count))
     #do tests to see if can turn brightness down
+
+def rainbowColumnCycle(strip, pointArray, wait_ms=20, iterations=5):
+  columnArray = getColumnArray(pointArray)
+  numColumns = 32 #32 columns
+  for j in range(256*iterations):
+    for i in range(len(columnArray)):
+      strip.setPixelColor(i,wheel((int(columnArray[i][1] * 256 / numColumns) + j) & 255))
+    strip.show()
+    time.sleep(wait_ms/1000.0)
