@@ -1,12 +1,3 @@
 {
-  "files": {
-    "neopixel.py": [
-      {
-        "id": "0dbd34e0-2277-43e0-a99a-b05e0e612040",
-        "line": 1,
-        "version": 120,
-        "index": 0
-      }
-    ]
-  }
+  "files": {}
 }

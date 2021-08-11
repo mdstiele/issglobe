@@ -1,17 +1,20 @@
 import urllib3
-from math import sin, cos, sqrt, atan2, radians
+# from math import sin, cos, sqrt, atan2, radians
 import math
 #import time
 from datetime import datetime
 import ephem
 from ephem import degree
+from geopy import distance as gdistance
 import socket
 #from threading import Timer
 import select
 import sys
 from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, rainbowColumnCycle
 import logging
-from neopixel_mock import Color
+# from neopixel_mock import Color
+from colorzero import Color
+from mapplot import plot
 
 degrees_per_radian = 180.0 / math.pi
 
@@ -28,7 +31,7 @@ moonLightColor = Color(255,0,255) #light blue
 issLightColor = Color(0,255,0) #red
 totalNumLed = 40 #total number of leds on system
 statusLed = 41 #number in chain of the status led
-currMode = 4 #the current mode, starts at 0
+currMode = 0 #the current mode, starts at 0
 
 ledCoordsDir = "ledcoords.txt"#"/home/pi/issglobe/ledcoords.txt"
 
@@ -88,21 +91,29 @@ def getClosestPoint(lat, lon, pointArray):
   minDist = 100000
   for i in pointArray:
     # print(i)
-    x = i[0]
-    y = i[1]
+    pointlat = i[0]
+    pointlon = i[1]
     # print (lat, lon, x, y)
-    dist = calcDist(lat, lon, x, y)
+
+    # convert x to a longintude (-180 to 180) NOT (0 to 360)
+    #Longitude can be between 0~360 (long3) and -180~180 (long1)
+    pointlong3 = pointlon
+    pointlong1 = (pointlong3 + 180) % 360 - 180
+
+    dist = calcDist(lat, lon, pointlat, pointlong1)
     # print (dist)
     # print("{},{},{}".format(x,y,round(dist,0)))
     if dist < minDist:
       point = pointArray.index(i)
 #      coord = str(x)+","+str(y)
       minDist = dist
-#       print (point, dist)
+      # print (point, dist)
 #       print (lat, lon, x, y)
-  logging.debug("clostest point is: {}: ({}) with distance of: {}".format(point, pointArray[point], minDist))
+  pointlong1 = (pointArray[point][0] + 180) % 360 - 180
+  logging.debug("clostest point is: {}: ({}, {}) with distance of: {}".format(point, pointlong1, pointArray[point][1], minDist))
+  
 #   print (lat,lon,pointArray[point][0], pointArray[point][1])
-#   print (point, pointArray[point], minDist)
+  # print (point, pointArray[point], minDist)
   
   return point
 
@@ -113,13 +124,13 @@ def getClosestPoints(lat, lon, pointArray, amount):
     point = 0
     minDist = 100000
     for i in tempPointArray:
-      x = i[0]
-      y = i[1]
-      dist = calcDist(lat, lon, x, y)
+      pointlat = i[0]
+      pointlon = i[1]
+      dist = calcDist(lat, lon, pointlat, pointlon)
       # print(x,y,dist)
       if dist < minDist:
         point = tempPointArray.index(i)
-        coord = str(x)+","+str(y)
+        coord = str(pointlon)+","+str(pointlon)
         minDist = dist
         # print(pointArray.index(i), " : ", dist)
     closePointStr = str(coord) + " : " + str(minDist)
@@ -133,19 +144,22 @@ def getClosestPoints(lat, lon, pointArray, amount):
 def calcDist(lat1, lon1, lat2, lon2):
 
   # approximate radius of earth in km
-  R = (ephem.earth_radius/1000)
-  lat1 = radians(lat1)
-  lon1 = radians(lon1)
-  lat2 = radians(lat2)
-  lon2 = radians(lon2)
-  dlon = (abs(lon2 - lon1))
-  dlat = (abs(lat2 - lat1))
-#   print (dlon, dlat)
-  a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-  c = 2 * atan2(sqrt(a), sqrt(1 - a))
-  distance = R * c
+#   R = (ephem.earth_radius/1000)
+#   lat1 = radians(lat1)
+#   lon1 = radians(lon1)
+#   lat2 = radians(lat2)
+#   lon2 = radians(lon2)
+#   dlon = (abs(lon2 - lon1))
+#   dlat = (abs(lat2 - lat1))
+# #   print (dlon, dlat)
+#   a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+#   c = 2 * atan2(sqrt(a), sqrt(1 - a))
+#   distance = R * c
 
-  return distance
+  # print(gdistance.distance((lat1,lon1), (lat2,lon2)).km)
+  # print(distance)
+
+  return gdistance.distance((lat1,lon1), (lat2,lon2)).km
 
 def lightSun(pointArray):
   sun.compute()
@@ -191,6 +205,17 @@ def lightIss(pointArray):
   # lightsArray = [(getClosestPoint(37, 160, pointArray),issLightColor)]
   return lightsArray
 
+class TimeoutExpired(Exception):
+  pass
+
+def input_with_timeout(prompt, timeout):
+  sys.stdout.write(prompt)
+  sys.stdout.flush()
+  ready, _, _ = select.select([sys.stdin], [],[], timeout)
+  if ready:
+    return sys.stdin.readline().rstrip('\n') # expect stdin to be line-buffered
+  raise TimeoutExpired
+  
 def runMode(currMode, strip):
   lightsArray = []
   led_coords = getLedCoords()
@@ -219,14 +244,37 @@ def runMode(currMode, strip):
 
   colorSetAll(strip, Color(0,0,0))
   for i in lightsArray:
+    logging.debug(i)
     strip.setPixelColor(i[0], i[1])
-  protectionShow(strip)
 
+  if logging.getLogger().getEffectiveLevel()==(logging.DEBUG):
+    plot(lightsArray, led_coords)
+  protectionShow(strip)
+  # print(lightsArray)
+  return currMode                 
+
+def chkChangeMode(timer, currMode):
+  try:
+    answer = input_with_timeout("Mode:", timer)
+  except TimeoutExpired:
+    logging.debug("Cycle Complete: Mode staying at %d" % int(currMode))
+    return currMode
+  else:
+    if (int(answer) >= 0) and (int(answer) <= 4):
+      currMode = answer
+    logging.info('Mode updated to %s' % int(currMode))
+    return currMode
 def changeMode(currMode):
   #call this when button press
   modeList = [1,2,3,4,0]
   currMode = modeList[currMode]
   return currMode
+  
+def createHeightArray(pointArray):
+  heightArray = []
+  for i in pointArray:
+    heightArray.append(i[1])
+  return heightArray
 
 def systemOn(strip):
   led_coords = getLedCoords()

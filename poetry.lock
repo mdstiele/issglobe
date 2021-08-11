@@ -19,6 +19,34 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "geographiclib"
+version = "1.52"
+description = "The geodesic routines from GeographicLib"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "geopy"
+version = "2.2.0"
+description = "Python Geocoding Toolbox"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[package.dependencies]
+geographiclib = ">=1.49,<2"
+
+[package.extras]
+aiohttp = ["aiohttp"]
+dev = ["async-generator", "coverage", "flake8 (>=3.8.0,<3.9.0)", "isort (>=5.6.0,<5.7.0)", "pytest-aiohttp", "pytest (>=3.10)", "readme-renderer", "sphinx", "sphinx-issues", "sphinx-rtd-theme (>=0.5.0)"]
+dev-docs = ["readme-renderer", "sphinx", "sphinx-issues", "sphinx-rtd-theme (>=0.5.0)"]
+dev-lint = ["async-generator", "flake8 (>=3.8.0,<3.9.0)", "isort (>=5.6.0,<5.7.0)"]
+dev-test = ["async-generator", "coverage", "pytest-aiohttp", "pytest (>=3.10)", "sphinx"]
+requests = ["urllib3 (>=1.24.2)", "requests (>=2.16.2)"]
+timezone = ["pytz"]
+
+[[package]]
 name = "gpiozero"
 version = "1.6.2"
 description = "A simple interface to GPIO devices with Raspberry Pi."
@@ -44,7 +72,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "7c2c44c3dd7111534942212785f585109915b28c39432da343183ca278169403"
+content-hash = "2b7cd8cf884a368db76b718623f2ed307d7800ab155da0d2488b29bdec927c1f"
 
 [metadata.files]
 colorzero = [
@@ -93,6 +121,14 @@ ephem = [
     {file = "ephem-4.0.0.2-cp39-cp39-win32.whl", hash = "sha256:e10fc9715abcc924dfffcde8438a7e0afe574ee99afc945a729fa88739fc3289"},
     {file = "ephem-4.0.0.2-cp39-cp39-win_amd64.whl", hash = "sha256:f1d9fec04e41a8b00e366ba9c2aece5a937cd36504173f6310e7aeb218c2fc2c"},
     {file = "ephem-4.0.0.2.tar.gz", hash = "sha256:d03de73ebf6a91681d597eb5b5d43bcf6f0c67e292bba2f9a974734b4f15757e"},
+]
+geographiclib = [
+    {file = "geographiclib-1.52-py3-none-any.whl", hash = "sha256:8f441c527b0b8a26cd96c965565ff0513d1e4d9952b704bf449409e5015c77b7"},
+    {file = "geographiclib-1.52.tar.gz", hash = "sha256:ac400d672b8954b0306bca890b088bb8ba2a757dc8133cca0b878f34b33b2740"},
+]
+geopy = [
+    {file = "geopy-2.2.0-py3-none-any.whl", hash = "sha256:8f1f949082b964385de61fcc3a667a6a9a6e242beb1ae8972449f164b2ba0e89"},
+    {file = "geopy-2.2.0.tar.gz", hash = "sha256:58b7edf526b8c32e33126570b5f4fcdfaa29d4416506064777ae8d84cd103fdd"},
 ]
 gpiozero = [
     {file = "gpiozero-1.6.2-py2.py3-none-any.whl", hash = "sha256:9af00b90d4fa775aa1fc023363e4aa5539844a5b0c461be5ced5cfabba364d99"},
