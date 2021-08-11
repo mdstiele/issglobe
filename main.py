@@ -1,11 +1,16 @@
 # from ledcontrol import systemOn
 from lightarray import runMode, systemOn, systemOff, currMode, changeMode
 from ledcontrol import colorAll
-from gpiozero import Button
-from neopixel import Color, Adafruit_NeoPixel
+from gpiozero import Button, Device
+from gpiozero.pins.mock import MockFactory
+from neopixel_mock import Color, Adafruit_NeoPixel
 import argparse
 import logging
 from time import sleep
+
+#mock devices
+Device.pin_factory = MockFactory()
+
 
 # LED strip configuration:
 LED_COUNT      = 400      # Number of LED pixels.

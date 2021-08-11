@@ -11,7 +11,7 @@ import select
 import sys
 from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, rainbowColumnCycle
 import logging
-from neopixel import Color
+from neopixel_mock import Color
 
 degrees_per_radian = 180.0 / math.pi
 
@@ -30,13 +30,15 @@ totalNumLed = 40 #total number of leds on system
 statusLed = 41 #number in chain of the status led
 currMode = 4 #the current mode, starts at 0
 
+ledCoordsDir = "ledcoords.txt"#"/home/pi/issglobe/ledcoords.txt"
+
 # NEOPIXEL BEST PRACTICES for most reliable operation:
 # // - Add 1000 uF CAPACITOR between NeoPixel strip's + and - connections.
 # // - MINIMIZE WIRING LENGTH between microcontroller board and first pixel.
 # // - NeoPixel strip's DATA-IN should pass through a 300-500 OHM RESISTOR.
 
 def getLedCoords():
-  f = open("/home/pi/issglobe/ledcoords.txt", "r")
+  f = open(ledCoordsDir, "r")
   flines = f.read().split("\n")
   outputList = []
   for i in flines:

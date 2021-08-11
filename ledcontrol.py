@@ -1,4 +1,4 @@
-from neopixel import Color
+from neopixel_mock import Color
 import time
 import logging
 
