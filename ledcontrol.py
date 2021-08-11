@@ -1,6 +1,17 @@
-from neopixel_mock import Color
+from neopixel import Color as Color2
 import time
 import logging
+from colorzero import Color
+
+# # LED strip configuration:
+# LED_COUNT      = 16      # Number of LED pixels.
+# LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
+# #LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
+# LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
+# LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
+# LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
+# LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
+# LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53                
 
 maxLedOn = 200 #max number of leds that should be on to stay under amp rating
 
@@ -28,22 +39,23 @@ def colorSet(strip, color, led):
   strip.setPixelColor(led, color)
   protectionShow(strip)
 
-def scrollup(strip, pointArray, color=Color(255, 0, 0), wait_ms=1):
-  for j in range(-80, 90, 10):
+def scrollup(strip, pointArray, color=Color(0, 0, 255), wait_ms=1):
+  for j in range(-70, 90, 20):
     for q in pointArray:
-      p=q[0]
-      if ((j-10) <= p <= j):
+      p=q[1]
+      if ((j-20) <= p <= j):
         strip.setPixelColor(pointArray.index(q), color)
       else:
         strip.setPixelColor(pointArray.index(q), Color(0,0,0))
     protectionShow(strip)
     logging.debug("scrollup cycle: {}".format(j))
 
-def scrolldown(strip, pointArray, color=Color(0, 255, 0), wait_ms=50):
+def scrolldown(strip, pointArray, color=Color(255, 0, 0), wait_ms=50):
   for j in range(90, -80, -10):
     for q in pointArray:
       p=q[0]
       if ((j-10) <= p <= j):
+        # showArray.append((pointArray.index(q), color))
         strip.setPixelColor(pointArray.index(q), color)
       else:
         strip.setPixelColor(pointArray.index(q), Color(0,0,0))
@@ -82,13 +94,21 @@ def wheel(pos):
         return Color(0, pos * 3, 255 - pos * 3)
 
 def protectionShow(strip):
+  print(Color(0,0,0))
+  print(Color2(0,0,0))
+  #switch to import and use lenth of strip
+  #use strip.getpixels()
+  #count non 0 colors                                         
   count = 0
-  for i in range(strip.numPixels()):
-    if (strip.getPixelColor(i) != Color(0,0,0)):
+  for i in strip.getPixels():
+    if (i[1] != Color(0,0,0)):
       count += 1
+  # for i in range(strip.numPixels()):
+  #   if (strip.getPixelColor(i) != Color(0,0,0)):
+  #     count += 1
 
   if count <= maxLedOn:
-    logging.debug("Protection show: {} LEDs on".format(count))
+    logging.info("Protection show: {} LEDs on".format(count))
     strip.show()
   else:
     logging.error("{} LEDs is over threshold, overload prevention activated".format(count))
