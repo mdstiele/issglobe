@@ -1,3 +1,12 @@
 {
-  "files": {}
+  "files": {
+    "ledcontrol.py": [
+      {
+        "id": "172e9c4f-db6b-4b94-b8cf-2fa90660a4e7",
+        "line": 104,
+        "version": 194,
+        "index": 3728
+      }
+    ]
+  }
 }

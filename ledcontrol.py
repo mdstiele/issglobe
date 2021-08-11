@@ -1,7 +1,7 @@
-from neopixel import Color as Color2
+from neopixel_mock_ms import Color
 import time
 import logging
-from colorzero import Color
+from colorzero import Color as Color2
 
 # # LED strip configuration:
 # LED_COUNT      = 16      # Number of LED pixels.
@@ -94,8 +94,6 @@ def wheel(pos):
         return Color(0, pos * 3, 255 - pos * 3)
 
 def protectionShow(strip):
-  print(Color(0,0,0))
-  print(Color2(0,0,0))
   #switch to import and use lenth of strip
   #use strip.getpixels()
   #count non 0 colors                                         

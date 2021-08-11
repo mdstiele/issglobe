@@ -1,67 +1,20 @@
-# from ledcontrol import systemOn
-from lightarray import runMode, chkChangeMode, systemOn, systemOff, currMode, changeMode
-from ledcontrol import colorWipe, colorAll
+from lightarray import runMode, currMode#, chkChangeMode, systemOn, systemOff, changeMode
+# from ledcontrol import colorWipe, colorAll, systemOn
 # from gpiozero import Button, Device
 # from gpiozero.pins.mock import MockFactory
-from neopixel_mock import Color, Adafruit_NeoPixel
+from neopixel_mock_ms import strip
 import argparse
 # from colorzero import Color
 import logging
 from time import sleep
+from os import system, name
 
 #mock devices
 # Device.pin_factory = MockFactory()
+
 logging.basicConfig(level=logging.DEBUG)
-
+refreshseconds = 5
 maxLedOn = 100  #max number of leds that should be on to stay under amp rating
-
-
-# import only system from os
-from os import system, name
-# define our clear function
-def clear():
-    # for windows
-    if name == 'nt':
-        _ = system('cls')
-  
-    # for mac and linux(here, os.name is 'posix')
-    else:
-        _ = system('clear')
-
-#THIS IS MY MADE MOCK STUFF
-class strip:
-    colorArray = []
-
-    def __init__(self):
-        for i in range(400):
-            self.colorArray.append((i, Color(
-                0,
-                0,
-                0,
-            )))
-
-    def begin(self):
-        return
-
-    def setPixelColor(self, index, Color):
-        for i in range(0, 399):
-            arrayPoint = self.colorArray[i]
-            arrayIndex = arrayPoint[0]
-            if arrayIndex == index:
-                del self.colorArray[i]
-        self.colorArray.append((index, Color))
-                                                                                            
-                                                                    
-
-    def numPixels(self):
-        return 400
-
-    def getPixels(self):
-        return self.colorArray
-
-    def show(self):
-        return
-
 
 # LED strip configuration:
 LED_COUNT      = 400      # Number of LED pixels.
@@ -85,6 +38,17 @@ LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 #     print("shutting down")
 #     systemOff(strip)
 #     colorAll(strip, Color(0, 0, 0))
+
+#Clear the console
+def clear():
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+  
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = system('clear')
+
 
 # Main program logic follows:
 if __name__ == '__main__':
@@ -121,80 +85,9 @@ if __name__ == '__main__':
     while True:
         clear()
         currMode = runMode(currMode, strip)
-        sleep(5)
+        sleep(refreshseconds)
 
     # except KeyboardInterrupt:
     #     if args.clear:
     #         # modeButtonHeld()
     #         colorWipe(strip, Color(0, 0, 0), 10)
-
-
-
-
-
-
-
-# from lightarray import getLedCoords, lightMoon, calcDist, getColumnArray #runMode, systemOn, systemOff, currMode,
-# from ledcontrol import rainbowColumnCycle
-# import logging
-# from time import sleep
-
-
-# import threading
-# import time
-# import RPi.GPIO as GPIO
-
-# GPIO.setmode(GPIO.BOARD)
-
-# class Button(threading.Thread):
-#     def __init__(self, channel):
-#         threading.Thread.__init__(self)
-#         self._pressed = False
-#         self.channel = channel
-#         GPIO.setup(self.channel, GPIO.IN)
-#         self.deamon = True
-#         self.start()
-
-#     def run(self):
-#         previous = None
-#         while 1:
-#             current = GPIO.input(self.channel)
-#             time.sleep(0.01)
-
-#             if current is False and previous is True:
-#                 self._pressed = True
-
-#                 while self._pressed:
-#                     time.sleep(0.05)
-
-#             previous = current
-
-#     def onButtonPress():
-#         print("btn presdsed")
-
-# button = Button(36)
-
-# while True:
-#     name = input('Enter a Name:')
-
-#     if name.upper() == ('Q'):
-#         break
-#     print('hello', name)
-
-#     if button.pressed():
-#         onButtonPress()
-
-
-
-# if __name__ == '__main__':
- 
-#   logging.basicConfig(level=logging.INFO)
-#   # while True:
-#   # points = lightMoon(led_coords)
-#   # for i in points:
-#   #     print (led_coords[i[0]][0], led_coords[i[0]][1])
-#     # print (led_coords[point[0][0]])
-#     # if last != point:
-#     #   last = point
-#     # print (led_coords[point[0][0]])
-#     # sleep(5)
