@@ -1,7 +1,7 @@
 from neopixel_mock_ms import Color
 import time
 import logging
-from colorzero import Color as Color2
+# from colorzero import Color as Color2
 
 # # LED strip configuration:
 # LED_COUNT      = 16      # Number of LED pixels.
@@ -99,7 +99,9 @@ def protectionShow(strip):
   #count non 0 colors                                         
   count = 0
   for i in strip.getPixels():
-    if (i[1] != Color(0,0,0)):
+    # if (i[1] != Color(0,0,0)): #colorzero
+      # count += 1
+    if (i[1] != Color(0,0,0)): #neopixel
       count += 1
   # for i in range(strip.numPixels()):
   #   if (strip.getPixelColor(i) != Color(0,0,0)):

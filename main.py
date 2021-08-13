@@ -1,18 +1,16 @@
-from lightarray import runMode, currMode#, chkChangeMode, systemOn, systemOff, changeMode
-# from ledcontrol import colorWipe, colorAll, systemOn
+from lightarray import runMode, currMode#, systemOn#, chkChangeMode, systemOff, changeMode
+from ledcontrol import colorWipe#, colorAll, systemOn
 # from gpiozero import Button, Device
 # from gpiozero.pins.mock import MockFactory
-from neopixel_mock_ms import strip
+from neopixel_mock_ms import strip, Color
 import argparse
-# from colorzero import Color
 import logging
 from time import sleep
 from os import system, name
 
 #mock devices
 # Device.pin_factory = MockFactory()
-
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)#, force = True)
 refreshseconds = 5
 maxLedOn = 100  #max number of leds that should be on to stay under amp rating
 
@@ -55,9 +53,9 @@ if __name__ == '__main__':
     # # Process arguments
     # parser = argparse.ArgumentParser()
     # parser.add_argument(
-    #     '-c', '--clear', action='store_true', help='clear the display on exit')
+    #     '-c', '--clear', action='store_true', help='clear the led display on exit, otherwise it will hold the last colors set')
     # parser.add_argument(
-    #     '-v', '--verbose', action='store_true', help='when set will sre logger to DEBUG otherwise will be WARNING')
+    #     '-v', '--verbose', action='count', default = 1, help='each v increases the logger level. default is WARNING, "-v" is INFO, "-vv" is DEBUG')
     # args = parser.parse_args()
 
     # Create NeoPixel object with appropriate configuration.
@@ -71,14 +69,18 @@ if __name__ == '__main__':
     # print ('Press Ctrl-C to quit.')
     # if not args.clear:
     #   print('Use "-c" argument to clear LEDs on exit')
-    
-    # if args.verbose:
-    #   logging.basicConfig(level=logging.DEBUG)
-    # else:
-    #   logging.basicConfig(level=logging.WARNING)
+
+    # args.verbose = 40 - (10*args.verbose) if args.verbose > 0 else 0
+    # logging.basicConfig(level=args.verbose, force=True, format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
+    # if args.verbosei:
+    #   logging.basicConfig(level=logging.INFO, force=True)
+    # if args.verbosed:
+    #   logging.basicConfig(level=logging.DEBUG, force=True)
 
     # try:
         # systemOn(strip)
+        # sleep(10)
         # modeButton.when_pressed = modeButtonPressed
         # modeButton.when_held = modeButtonHeld
 
@@ -90,4 +92,5 @@ if __name__ == '__main__':
     # except KeyboardInterrupt:
     #     if args.clear:
     #         # modeButtonHeld()
+    #         print("shutdown")
     #         colorWipe(strip, Color(0, 0, 0), 10)

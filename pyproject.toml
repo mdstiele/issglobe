@@ -10,6 +10,7 @@ ephem = "^4.0.0"
 gpiozero = "^1.6.2"
 rpi-ws281x = "^4.3.0"
 geopy = "^2.2.0"
+global-land-mask = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 

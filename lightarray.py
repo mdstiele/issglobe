@@ -12,8 +12,8 @@ import select
 import sys
 from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, rainbowColumnCycle
 import logging
-# from neopixel_mock import Color
-from colorzero import Color
+from neopixel_mock_ms import Color
+# from colorzero import Color
 from mapplot import plot
 
 degrees_per_radian = 180.0 / math.pi
@@ -33,7 +33,7 @@ totalNumLed = 40 #total number of leds on system
 statusLed = 41 #number in chain of the status led
 currMode = 0 #the current mode, starts at 0
 
-ledCoordsDir = "ledcoords.txt"#"/home/pi/issglobe/ledcoords.txt"
+ledCoordsDir = "ledcoords.txt"#"ledcoords.txt"#"/home/pi/issglobe/ledcoords.txt"
 
 # NEOPIXEL BEST PRACTICES for most reliable operation:
 # // - Add 1000 uF CAPACITOR between NeoPixel strip's + and - connections.
@@ -110,7 +110,8 @@ def getClosestPoint(lat, lon, pointArray):
       # print (point, dist)
 #       print (lat, lon, x, y)
   pointlong1 = (pointArray[point][0] + 180) % 360 - 180
-  logging.debug("clostest point is: {}: ({}, {}) with distance of: {}".format(point, pointlong1, pointArray[point][1], minDist))
+  logging.debug("closest point is: {}: ({}, {}) with distance of: {}".format(point, pointArray[point][0], pointArray[point][1], minDist))
+  logging.debug("Point {} has a calculated longitude of {}".format(point, pointlong1))
   
 #   print (lat,lon,pointArray[point][0], pointArray[point][1])
   # print (point, pointArray[point], minDist)

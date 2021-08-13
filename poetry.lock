@@ -47,6 +47,14 @@ requests = ["urllib3 (>=1.24.2)", "requests (>=2.16.2)"]
 timezone = ["pytz"]
 
 [[package]]
+name = "global-land-mask"
+version = "1.0.0"
+description = "Check whether a lat/lon point in on land or on sea"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "gpiozero"
 version = "1.6.2"
 description = "A simple interface to GPIO devices with Raspberry Pi."
@@ -72,7 +80,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "2b7cd8cf884a368db76b718623f2ed307d7800ab155da0d2488b29bdec927c1f"
+content-hash = "9ca0ecc043c1e9704974d032a3557906048f3d9566c111fb3adac873a651b32d"
 
 [metadata.files]
 colorzero = [
@@ -129,6 +137,10 @@ geographiclib = [
 geopy = [
     {file = "geopy-2.2.0-py3-none-any.whl", hash = "sha256:8f1f949082b964385de61fcc3a667a6a9a6e242beb1ae8972449f164b2ba0e89"},
     {file = "geopy-2.2.0.tar.gz", hash = "sha256:58b7edf526b8c32e33126570b5f4fcdfaa29d4416506064777ae8d84cd103fdd"},
+]
+global-land-mask = [
+    {file = "global-land-mask-1.0.0.tar.gz", hash = "sha256:956bf02e8b05bfc9f3a29cbc6e97d5ba4151c0732504acc73c2db9ea325ecff3"},
+    {file = "global_land_mask-1.0.0-py3-none-any.whl", hash = "sha256:07751fbb4e3834ee508a84ea64d9bd5340fbd0a8c951e24b43c323fcc670bb62"},
 ]
 gpiozero = [
     {file = "gpiozero-1.6.2-py2.py3-none-any.whl", hash = "sha256:9af00b90d4fa775aa1fc023363e4aa5539844a5b0c461be5ced5cfabba364d99"},
