@@ -1,5 +1,5 @@
-from lightarray import runMode, currMode#, systemOn#, chkChangeMode, systemOff, changeMode
-from ledcontrol import colorWipe#, colorAll, systemOn
+from lightarray import Lightarray#, systemOn#, chkChangeMode, systemOff, changeMode
+from ledcontrol import * #colorWipe#, colorAll, systemOn
 # from gpiozero import Button, Device
 # from gpiozero.pins.mock import MockFactory
 from neopixel_mock_ms import strip, Color
@@ -63,6 +63,7 @@ if __name__ == '__main__':
     # Intialize the library (must be called once before other functions).
     strip = strip()
     strip.begin()
+    lightarray = Lightarray()
 
     # # modeButton = Button(BTN_PIN, bounce_time=.5, hold_time=7)
 
@@ -86,7 +87,7 @@ if __name__ == '__main__':
 
     while True:
         clear()
-        currMode = runMode(currMode, strip)
+        lightarray.runMode(strip)
         sleep(refreshseconds)
 
     # except KeyboardInterrupt:

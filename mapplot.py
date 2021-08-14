@@ -52,12 +52,13 @@ def plot(colorArray, pointArray, isstrail=False):
         else:
           map = True
       
-      if i==0:
-        string= string + "  -  "
-      elif(light):
+      
+      if(light):
         string = string + "  O  "
       elif(trail):
         string = string + "  +  "
+      elif i==0:
+        string= string + "  -  "
       elif(land):#map):
         string = string + "  .  "
       else:

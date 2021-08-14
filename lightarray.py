@@ -31,7 +31,8 @@ moonLightColor = Color(255,0,255) #light blue
 issLightColor = Color(0,255,0) #red
 totalNumLed = 40 #total number of leds on system
 statusLed = 41 #number in chain of the status led
-currMode = 0 #the current mode, starts at 0
+# currMode = 0 #the current mode, starts at 0
+defaultMode = 0 #defualt mode when the system starts
 
 ledCoordsDir = "ledcoords.txt"#"ledcoords.txt"#"/home/pi/issglobe/ledcoords.txt"
 
@@ -40,13 +41,80 @@ ledCoordsDir = "ledcoords.txt"#"ledcoords.txt"#"/home/pi/issglobe/ledcoords.txt"
 # // - MINIMIZE WIRING LENGTH between microcontroller board and first pixel.
 # // - NeoPixel strip's DATA-IN should pass through a 300-500 OHM RESISTOR.
 
-def getLedCoords():
+def readLedCoords():
   f = open(ledCoordsDir, "r")
   flines = f.read().split("\n")
   outputList = []
   for i in flines:
     outputList.append(eval(i))
   return outputList #0-399
+
+
+# Lightarray class object will hold all variables related to the coordinates and also
+#   the coord/led interaction
+class Lightarray:
+  def __init__(self):
+    self.ledcoords = readLedCoords()
+    #num of pixels(leds)
+    #row count
+    #col count
+    #row list
+    #col list
+    #read land data
+    #current mode
+    self.mode = defaultMode
+    self.lightsArray = []
+
+  def getLedCoords(self):
+    return self.ledcoords
+
+  def setmode(self, mode: int):
+    self.mode = mode
+
+  def getmode(self):
+    return self.mode
+
+  def clearlightsarray(self):
+    self.lightsArray = []
+
+  def runMode(self, strip):
+    plottrail = False
+    self.lightsArray = []    
+    if (int(self.mode) == 0):
+      # print("0iss")
+      plottrail = True
+      for i in lightIss(self.ledcoords):
+        self.lightsArray.append(i)
+    elif (int(self.mode) == 1):
+      # print("1sun")
+      for i in lightSun(self.ledcoords):
+        self.lightsArray.append(i)
+    elif (int(self.mode) == 2):
+      # print("2moon")
+      for i in lightMoon(self.ledcoords):
+        self.lightsArray.append(i)
+    elif (int(self.mode) == 3):
+      # print("3all")
+      for i in lightSun(self.ledcoords):
+        self.lightsArray.append(i)
+      for i in lightMoon(self.ledcoords):
+        self.lightsArray.append(i)
+      for i in lightIss(self.ledcoords):
+        self.lightsArray.append(i)
+    elif (int(self.mode) == 4):
+        rainbowColumnCycle(strip, getColumnArray(self.ledcoords))
+
+    colorSetAll(strip, Color(0,0,0))
+    for i in self.lightsArray:
+      logging.debug(i)
+      strip.setPixelColor(i[0], i[1])
+
+    if logging.getLogger().getEffectiveLevel()==(logging.DEBUG):
+      plot(self.lightsArray, self.ledcoords, plottrail)
+    protectionShow(strip)
+    # print(lightsArray)                
+
+  
 
 def updateIssTleData():
   # check internet connection
@@ -216,43 +284,6 @@ def input_with_timeout(prompt, timeout):
   if ready:
     return sys.stdin.readline().rstrip('\n') # expect stdin to be line-buffered
   raise TimeoutExpired
-  
-def runMode(currMode, strip):
-  lightsArray = []
-  led_coords = getLedCoords()
-  if (int(currMode) == 0):
-    # print("0iss")
-    for i in lightIss(led_coords):
-      lightsArray.append(i)
-  elif (int(currMode) == 1):
-    # print("1sun")
-    for i in lightSun(led_coords):
-      lightsArray.append(i)
-  elif (int(currMode) == 2):
-    # print("2moon")
-    for i in lightMoon(led_coords):
-      lightsArray.append(i)
-  elif (int(currMode) == 3):
-    # print("3all")
-    for i in lightSun(led_coords):
-      lightsArray.append(i)
-    for i in lightMoon(led_coords):
-      lightsArray.append(i)
-    for i in lightIss(led_coords):
-      lightsArray.append(i)
-  elif (int(currMode) == 4):
-      rainbowColumnCycle(strip, getColumnArray(led_coords))
-
-  colorSetAll(strip, Color(0,0,0))
-  for i in lightsArray:
-    logging.debug(i)
-    strip.setPixelColor(i[0], i[1])
-
-  if logging.getLogger().getEffectiveLevel()==(logging.DEBUG):
-    plot(lightsArray, led_coords)
-  protectionShow(strip)
-  # print(lightsArray)
-  return currMode                 
 
 def chkChangeMode(timer, currMode):
   try:
@@ -277,13 +308,12 @@ def createHeightArray(pointArray):
     heightArray.append(i[1])
   return heightArray
 
-def systemOn(strip):
-  led_coords = getLedCoords()
-  scrollup(strip, led_coords)
+def systemOn(LightArray, strip):
+  scrollup(strip, LightArray.getLedCoords())
 
-def systemOff(strip):
-  led_coords = getLedCoords()
-  scrolldown(strip, led_coords)
+def systemOff(LightArray, strip):
+  LightArray.getLedCoords()
+  scrolldown(strip, LightArray.getLedCoords())
 
 def getColumnArray(pointArray):
   #get array of points with each (point,column)
