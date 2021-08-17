@@ -1,11 +1,19 @@
 {
   "files": {
+    "lightarray.py": [
+      {
+        "id": "c9bb40b4-210a-4514-9eb3-dadecada8044",
+        "line": 73,
+        "version": 2881,
+        "index": 2251
+      }
+    ],
     "mapplot.py": [
       {
         "id": "8121d09e-b134-4e77-97c7-78ceb0b39835",
-        "line": 48,
-        "version": 560,
-        "index": 1643
+        "line": 32,
+        "version": 1058,
+        "index": 1246
       }
     ]
   }

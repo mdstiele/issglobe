@@ -13,17 +13,14 @@ import sys
 from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, rainbowColumnCycle
 import logging
 from neopixel_mock_ms import Color
-# from colorzero import Color
 from mapplot import plot
 
 degrees_per_radian = 180.0 / math.pi
-
 sun = ephem.Sun()
 moon = ephem.Moon()
 greenwich = ephem.Observer()
 greenwich.lat = "0"
 greenwich.lon = "0"
-
 sunLightRadius = ephem.earth_radius/1000 * 1.5 #earth radius should mean about 50% coverage
 moonLightRadius = (ephem.earth_radius/1000)*.33 #1/3 earth radius
 sunLightColor = Color(255,255,200) #yellow white
@@ -49,18 +46,33 @@ def readLedCoords():
     outputList.append(eval(i))
   return outputList #0-399
 
+def compute_row_col_list(pointarray):
+  rowlist = []
+  collist = []
+  for i in pointarray:
+    if i[1] not in rowlist:
+      rowlist.append(i[1])
+    if i[0] not in collist:
+      collist.append(i[0])
+
+  return rowlist, collist
 
 # Lightarray class object will hold all variables related to the coordinates and also
 #   the coord/led interaction
 class Lightarray:
   def __init__(self):
+    #sets led coord data to a tuple array
     self.ledcoords = readLedCoords()
     #num of pixels(leds)
+    self.num_of_leds = len(self.ledcoords)
+    #row list #col list
+    self.led_row_list, self.led_col_list = compute_row_col_list(self.ledcoords)
     #row count
+    self.num_of_led_row = len(self.led_row_list)
     #col count
-    #row list
-    #col list
+    self.num_of_led_col = len(self.led_col_list)
     #read land data
+    self.led_is_land = []
     #current mode
     self.mode = defaultMode
     self.lightsArray = []
@@ -74,15 +86,45 @@ class Lightarray:
   def getmode(self):
     return self.mode
 
+  def get_lights_array(self):
+    return self.lightsArray
+
   def clearlightsarray(self):
     self.lightsArray = []
 
+  # def compute_row_col_list(self):
+  #   rowlist = []
+  #   collist = []
+  #   for i in self.getLedCoords():
+  #     if i[0] not in rowlist:
+  #       rowlist.append(i[1])
+  #     if i[1] not in collist:
+  #       collist.append(i[0])
+  #   print(rowlist)
+  #   self.led_row_list = rowlist
+  #   self.led_col_list = collist
+  #   self.num_of_led_row = len(rowlist)
+  #   self.num_of_led_col = len(collist)
+
+  def get_led_row_list(self):
+    return self.led_row_list
+
+  def get_led_col_list(self):
+    return self.led_col_list
+
+  def get_num_of_led_row(self):
+    return self.num_of_led_row
+
+  def get_num_of_led_col(self):
+    return self.num_of_led_col
+
   def runMode(self, strip):
-    plottrail = False
+    isplottable = True
+    plottraillength = 0
     self.lightsArray = []    
     if (int(self.mode) == 0):
       # print("0iss")
-      plottrail = True
+      plottraillength = 35
       for i in lightIss(self.ledcoords):
         self.lightsArray.append(i)
     elif (int(self.mode) == 1):
@@ -102,19 +144,19 @@ class Lightarray:
       for i in lightIss(self.ledcoords):
         self.lightsArray.append(i)
     elif (int(self.mode) == 4):
-        rainbowColumnCycle(strip, getColumnArray(self.ledcoords))
+      isplottable = False
+      rainbowColumnCycle(strip, getColumnArray(self.ledcoords))
 
     colorSetAll(strip, Color(0,0,0))
     for i in self.lightsArray:
       logging.debug(i)
       strip.setPixelColor(i[0], i[1])
 
-    if logging.getLogger().getEffectiveLevel()==(logging.DEBUG):
-      plot(self.lightsArray, self.ledcoords, plottrail)
+    if logging.getLogger().getEffectiveLevel()==(logging.DEBUG) and isplottable:
+      # plot(self, self.lightsArray, self.ledcoords, plottraillength)
+      plot(self, plottraillength)
     protectionShow(strip)
     # print(lightsArray)                
-
-  
 
 def updateIssTleData():
   # check internet connection
@@ -149,7 +191,7 @@ def getPointWithinDist(lat, lon, distance, pointArray):
   for i in pointArray: #pointarray = 0-399
     x = i[0]
     y = i[1]
-    dist = calcDist(lat, lon, x, y)
+    dist = calcDist(lat, lon, y, x)
     if dist < distance:
       lights.append(pointArray.index(i))
   return lights
@@ -159,16 +201,16 @@ def getClosestPoint(lat, lon, pointArray):
   minDist = 100000
   for i in pointArray:
     # print(i)
-    pointlat = i[0]
-    pointlon = i[1]
+    pointlat = i[1]
+    pointlon = i[0]
     # print (lat, lon, x, y)
 
     # convert x to a longintude (-180 to 180) NOT (0 to 360)
     #Longitude can be between 0~360 (long3) and -180~180 (long1)
-    pointlong3 = pointlon
-    pointlong1 = (pointlong3 + 180) % 360 - 180
+    # pointlong3 = pointlon
+    # pointlong1 = (pointlong3 + 180) % 360 - 180
 
-    dist = calcDist(lat, lon, pointlat, pointlong1)
+    dist = calcDist(lat, lon, pointlat, pointlon)
     # print (dist)
     # print("{},{},{}".format(x,y,round(dist,0)))
     if dist < minDist:
@@ -177,9 +219,9 @@ def getClosestPoint(lat, lon, pointArray):
       minDist = dist
       # print (point, dist)
 #       print (lat, lon, x, y)
-  pointlong1 = (pointArray[point][0] + 180) % 360 - 180
-  logging.debug("closest point is: {}: ({}, {}) with distance of: {}".format(point, pointArray[point][0], pointArray[point][1], minDist))
-  logging.debug("Point {} has a calculated longitude of {}".format(point, pointlong1))
+  # pointlong1 = (pointArray[point][0] + 180) % 360 - 180
+  logging.debug("closest point is: {}: ({}, {}) with distance of: {}".format(point, pointArray[point][1], pointArray[point][0], minDist))
+  # logging.debug("Point {} has a calculated longitude of {}".format(point, pointlong1))
   
 #   print (lat,lon,pointArray[point][0], pointArray[point][1])
   # print (point, pointArray[point], minDist)
@@ -193,8 +235,8 @@ def getClosestPoints(lat, lon, pointArray, amount):
     point = 0
     minDist = 100000
     for i in tempPointArray:
-      pointlat = i[0]
-      pointlon = i[1]
+      pointlat = i[1]
+      pointlon = i[0]
       dist = calcDist(lat, lon, pointlat, pointlon)
       # print(x,y,dist)
       if dist < minDist:
@@ -296,17 +338,18 @@ def chkChangeMode(timer, currMode):
       currMode = answer
     logging.info('Mode updated to %s' % int(currMode))
     return currMode
+
 def changeMode(currMode):
   #call this when button press
   modeList = [1,2,3,4,0]
   currMode = modeList[currMode]
   return currMode
   
-def createHeightArray(pointArray):
-  heightArray = []
-  for i in pointArray:
-    heightArray.append(i[1])
-  return heightArray
+# def createHeightArray(pointArray):
+#   heightArray = []
+#   for i in pointArray:
+#     heightArray.append(i[1])
+#   return heightArray
 
 def systemOn(LightArray, strip):
   scrollup(strip, LightArray.getLedCoords())
@@ -315,10 +358,10 @@ def systemOff(LightArray, strip):
   LightArray.getLedCoords()
   scrolldown(strip, LightArray.getLedCoords())
 
-def getColumnArray(pointArray):
-  #get array of points with each (point,column)
-  columns = [0,11.25,22.5,33.75,45,56.25,67.5,78.75,90,101.25,112.5,123.75,135,146.25,157.5,168.75,180,191.25,202.5,213.75,225,236.25,247.5,258.75,270,281.25,292.5,303.75,315,326.25,337.5,348.75]
-  columnArray = []
-  for j in pointArray:
-    columnArray.append((pointArray.index(j), columns.index(j[1])))
-  return columnArray
+# def getColumnArray(pointArray):
+#   #get array of points with each (point,column)
+#   columns = [0,11.25,22.5,33.75,45,56.25,67.5,78.75,90,101.25,112.5,123.75,135,146.25,157.5,168.75,180,191.25,202.5,213.75,225,236.25,247.5,258.75,270,281.25,292.5,303.75,315,326.25,337.5,348.75]
+#   columnArray = []
+#   for j in pointArray:
+#     columnArray.append((pointArray.index(j), columns.index(j[1])))
+#   return columnArray
