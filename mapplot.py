@@ -13,11 +13,11 @@ def getLandCoords():
     outputList2.append(eval(i))
   return outputList2 #0-399
 
-class plots(object):
-    plot_list = []
+class plot_objects(object):
+    plot_objects_list = []
 
     def __init__(self, name, symbol):
-        self.plot_list.append(self)
+        self.plot_objects_list.append(self)
         self.name = name
         self.lightarray = []
         self.symbol = str(symbol)
