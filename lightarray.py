@@ -29,7 +29,7 @@ issLightColor = Color(0,255,0) #red
 totalNumLed = 40 #total number of leds on system
 statusLed = 41 #number in chain of the status led
 # currMode = 0 #the current mode, starts at 0
-defaultMode = 0 #defualt mode when the system starts
+defaultMode = 3 #defualt mode when the system starts
 
 ledCoordsDir = "ledcoords.txt"#"ledcoords.txt"#"/home/pi/issglobe/ledcoords.txt"
 
@@ -76,6 +76,9 @@ class Lightarray:
     #current mode
     self.mode = defaultMode
     self.lightsArray = []
+    self.isslightsArray = []
+    self.sunlightsArray = []
+    self.moonlightsArray = []
 
   def getLedCoords(self):
     return self.ledcoords
@@ -89,8 +92,20 @@ class Lightarray:
   def get_lights_array(self):
     return self.lightsArray
 
+  def get_iss_lights_array(self):
+    return self.isslightsArray
+
+  def get_sun_lights_array(self):
+    return self.sunlightsArray
+
+  def get_moon_lights_array(self):
+    return self.moonlightsArray
+
   def clearlightsarray(self):
     self.lightsArray = []
+    self.isslightsArray = []
+    self.sunlightsArray = []
+    self.moonlightsArray = []
 
   # def compute_row_col_list(self):
   #   rowlist = []
@@ -121,12 +136,12 @@ class Lightarray:
   def runMode(self, strip):
     isplottable = True
     plottraillength = 0
-    self.lightsArray = []    
+    self.lightsArray = []
     if (int(self.mode) == 0):
       # print("0iss")
       plottraillength = 35
       for i in lightIss(self.ledcoords):
-        self.lightsArray.append(i)
+        self.lightsArray.append(i)        
     elif (int(self.mode) == 1):
       # print("1sun")
       for i in lightSun(self.ledcoords):
@@ -156,7 +171,58 @@ class Lightarray:
       # plot(self, self.lightsArray, self.ledcoords, plottraillength)
       plot(self, plottraillength)
     protectionShow(strip)
-    # print(lightsArray)                
+    # print(lightsArray)         
+
+  def runMultiMode(self, strip):
+    isplottable = True #remove later
+    issplottraillength = 0
+    self.lightsArray = []
+    self.isslightsArray = []
+    self.sunlightsArray = []
+    self.moonlightsArray = []
+    self.showIss = self.showSun = self.showMoon = False    
+    if (int(self.mode) == 0):
+      # print("0iss")
+      self.showIss = True
+    elif (int(self.mode) == 1):
+      # print("1sun")
+      self.showSun = True
+    elif (int(self.mode) == 2):
+      # print("2moon")
+      self.showMoon = True
+    elif (int(self.mode) == 3):
+      # print("3all")
+      self.showIss = self.showSun = self.showMoon = True
+    elif (int(self.mode) == 4):
+      isplottable = False
+      rainbowColumnCycle(strip, getColumnArray(self.ledcoords))
+
+    if (bool(self.showIss) == True):
+      # print("0iss")
+      issplottraillength = 35
+      for i in lightIss(self.ledcoords):
+        self.isslightsArray.append(i)
+    
+    if (bool(self.showSun) == True):
+      # print("1sun")
+      for i in lightSun(self.ledcoords):
+        self.sunlightsArray.append(i)
+    
+    if (bool(self.showMoon) == True):
+      # print("2moon")
+      for i in lightMoon(self.ledcoords):
+        self.moonlightsArray.append(i)
+
+    colorSetAll(strip, Color(0,0,0))
+    for i in self.lightsArray:
+      logging.debug(i)
+      strip.setPixelColor(i[0], i[1])
+
+    if logging.getLogger().getEffectiveLevel()==(logging.DEBUG) and isplottable:
+      # plot(self, self.lightsArray, self.ledcoords, plottraillength)
+      plot(self, issplottraillength)
+    protectionShow(strip)
+    # print(lightsArray)           
 
 def updateIssTleData():
   # check internet connection

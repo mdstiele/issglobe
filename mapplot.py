@@ -3,6 +3,7 @@ import logging
 # from lightarray import Lightarray
 pastpoints = deque()
 landCoordsDir = "ledcoords_land.txt"
+plotwidth = 7
 
 def getLandCoords():
   f2 = open("ledcoords_land.txt", "r")
@@ -11,6 +12,24 @@ def getLandCoords():
   for i in flines2:
     outputList2.append(eval(i))
   return outputList2 #0-399
+
+class plots(object):
+    plot_list = []
+
+    def __init__(self, name, symbol):
+        self.plot_list.append(self)
+        self.name = name
+        self.lightarray = []
+        self.symbol = str(symbol)
+
+    def get_name(self):
+      return self.name
+
+    def set_lightarray(self, lightarray):
+      self.lightarray = lightarray
+
+    def get_lightarray(self):
+      return self.lightarray
 
 # self.lightsArray, self.ledcoords,
 # def plot(colorArray, pointArray, traillength=0):
@@ -30,22 +49,39 @@ def plot(lightarray, traillength=0):
   #apends just the led number from color array to plotlightarray
   #example
   #[(219, <Color html='#ff0000' rgb=(1, 0, 0)>)]  ->  [219]
-  plotlightArray = []
-  for k in lightarray.get_lights_array():
-    plotlightArray.append(k[0])
-  
+  plotisslightArray = []
+  plotsunlightArray = []
+  plotmoonlightArray = []
+  # for k in lightarray.get_lights_array():
+  #   plotlightArray.append(k[0])
+  for k in lightarray.get_iss_lights_array():
+    plotisslightArray.append(k[0])
+
+  for l in lightarray.get_sun_lights_array():
+    plotsunlightArray.append(l[0])  
+
+  for m in lightarray.get_moon_lights_array():
+    plotmoonlightArray.append(m[0])
+
   string = ""
   for i in rowList:
     # string = string + str(rowList.index(i)).ljust(2, ' ') + " |" 
-    string = string + str(i).ljust(7, ' ') + " |" 
+    string = string + str(i).ljust(plotwidth, ' ') + " |" 
     for j in colList:
-      light = trail = map = False
+      iss = sun = moon = trail = map = False
       land = False
       # print(pointArray.index((i,j) in lightArray)
       # print((j,i))
       if ((j,i) in pointArray):
-        if(pointArray.index((j,i)) in plotlightArray):
-          light = True
+        # print(pointArray.index((j,i)))
+        # if(pointArray.index((j,i)) in plotlightArray):
+        #   light = True
+        if(pointArray.index((j,i)) in plotisslightArray):
+          iss = True
+        elif(pointArray.index((j,i)) in plotmoonlightArray):
+          moon = True
+        elif(pointArray.index((j,i)) in plotsunlightArray):
+          sun = True
         elif((traillength > 0) and pointArray.index((j,i)) in pastpoints):
           trail = True
           # print(LandBool[pointArray.index((i,j))][2])
@@ -57,16 +93,20 @@ def plot(lightarray, traillength=0):
           map = True
       
       
-      if(light):
-        string = string + "  O  "
+      if(iss):
+        string = string + " I "
       elif(trail):
-        string = string + "  +  "
+        string = string + " T "
+      elif(moon):
+        string = string + " M "
+      elif(sun):
+        string = string + " s "
       elif i==0:
-        string= string + "  -  "
+        string= string + " - "
       elif(land):#map):
-        string = string + "  .  "
+        string = string + " . "
       else:
-        string = string + "     "
+        string = string + "   "
     string = string + "|"
     string = string + "\n"
   string = string + ">"
@@ -74,8 +114,8 @@ def plot(lightarray, traillength=0):
 
   if (traillength > 0):
     #this only works if lightray is single int
-    if len(plotlightArray) == 1:
-      led = plotlightArray.pop()
+    if len(plotisslightArray) == 1:
+      led = plotisslightArray.pop()
       if led not in pastpoints:
         pastpoints.append(led)
     while len(pastpoints)>traillength:

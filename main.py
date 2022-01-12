@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     while True:
         clear()
-        lightarray.runMode(strip)
+        lightarray.runMultiMode(strip)
         sleep(refreshseconds)
 
     # except KeyboardInterrupt:
