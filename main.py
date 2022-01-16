@@ -1,11 +1,21 @@
-# from ledcontrol import systemOn
-from lightarray import runMode, systemOn, systemOff, currMode, changeMode
-from ledcontrol import colorAll
-from gpiozero import Button
-from neopixel import Color, Adafruit_NeoPixel
+#import ephem
+from lightarray import Lightarray
+from ledcontrol import * #colorWipe#, colorAll, systemOn
+from gpiozero import Button, Device
+# from gpiozero.pins.mock import MockFactory
+from neopixel import *
+# from neopixel_mock_ms import strip, Color
 import argparse
 import logging
 from time import sleep
+from os import system, name
+from subprocess import check_call
+
+#mock devices
+# Device.pin_factory = MockFactory()
+logging.basicConfig(level=logging.INFO)#, force = True)
+refreshseconds = 5
+maxLedOn = 100  #max number of leds that should be on to stay under amp rating
 
 # LED strip configuration:
 LED_COUNT      = 400      # Number of LED pixels.
@@ -17,119 +27,78 @@ LED_BRIGHTNESS = 150     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
+#button gpiozero settings
 BTN_PIN = 23
 
-global currMode
+#global currMode
 
 def modeButtonPressed():
-    global currMode
-    currMode = changeMode(currMode)
+    print('mode button pressed')
+#     global currMode
+#    currMode = changeMode(currMode)
+    lightarray.changeMode()
 
 def modeButtonHeld():
     print("shutting down")
-    systemOff(strip)
+    lightarray.systemOff()
     colorAll(strip, Color(0, 0, 0))
+    check_call(['sudo', 'poweroff'])
+
+#Clear the console
+def clear():
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = system('clear')
 
 # Main program logic follows:
 if __name__ == '__main__':
     # Process arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-c', '--clear', action='store_true', help='clear the display on exit')
+         '-c', '--clear', action='store_true', help='clear the led display on exit, otherwise it will hold the last colors set')
     parser.add_argument(
-        '-v', '--verbose', action='store_true', help='when set will sre logger to DEBUG otherwise will be WARNING')
+         '-v', '--verbose', action='count', default = 1, help='each v increases the logger level. default is WARNING, "-v" is INFO, "-vv" is DEBUG')
     args = parser.parse_args()
 
     # Create NeoPixel object with appropriate configuration.
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    # # Intialize the library (must be called once before other functions).
+    # Intialize the library (must be called once before other functions).
+    #strip = strip()
     strip.begin()
+    lightarray = Lightarray(strip)
 
-    modeButton = Button(BTN_PIN, bounce_time=.5, hold_time=7)
+    modeButton = Button(BTN_PIN, hold_time=5) #bounce_time=.5, hold_time=7)
 
     print ('Press Ctrl-C to quit.')
     if not args.clear:
-      print('Use "-c" argument to clear LEDs on exit')
-    
-    if args.verbose:
-      logging.basicConfig(level=logging.DEBUG)
-    else:
-      logging.basicConfig(level=logging.WARNING)
+    	print('Use "-c" argument to clear LEDs on exit')
+    sleep(5)
+    args.verbose = 40 - (10*args.verbose) if args.verbose > 0 else 0
+    logging.basicConfig(level=args.verbose, force=True, format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
+    #if args.verbosei:
+    #    logging.basicConfig(level=logging.INFO, force=True)
+    #if args.verbosed:
+    #    logging.basicConfig(level=logging.DEBUG, force=True)
 
     try:
-        systemOn(strip)
-        modeButton.when_pressed = modeButtonPressed
-        modeButton.when_held = modeButtonHeld
+        lightarray.systemOn()
+        #sleep(10)
+        print('watching buttons..')
+        modeButton.when_pressed = lightarray.changeMode #modeButtonPressed
+        modeButton.when_held = lightarray.systemOff
 
         while True:
-            runMode(currMode, strip)
-            sleep(5)
+#            clear()
+            lightarray.runMultiMode(strip)
+            #sleep(refreshseconds)
 
     except KeyboardInterrupt:
         if args.clear:
-            modeButtonHeld()
-
-# from lightarray import getLedCoords, lightMoon, calcDist, getColumnArray #runMode, systemOn, systemOff, currMode,
-# from ledcontrol import rainbowColumnCycle
-# import logging
-# from time import sleep
-
-
-# import threading
-# import time
-# import RPi.GPIO as GPIO
-
-# GPIO.setmode(GPIO.BOARD)
-
-# class Button(threading.Thread):
-#     def __init__(self, channel):
-#         threading.Thread.__init__(self)
-#         self._pressed = False
-#         self.channel = channel
-#         GPIO.setup(self.channel, GPIO.IN)
-#         self.deamon = True
-#         self.start()
-
-#     def run(self):
-#         previous = None
-#         while 1:
-#             current = GPIO.input(self.channel)
-#             time.sleep(0.01)
-
-#             if current is False and previous is True:
-#                 self._pressed = True
-
-#                 while self._pressed:
-#                     time.sleep(0.05)
-
-#             previous = current
-
-#     def onButtonPress():
-#         print("btn presdsed")
-
-# button = Button(36)
-
-# while True:
-#     name = input('Enter a Name:')
-
-#     if name.upper() == ('Q'):
-#         break
-#     print('hello', name)
-
-#     if button.pressed():
-#         onButtonPress()
-
-
-
-# if __name__ == '__main__':
- 
-#   logging.basicConfig(level=logging.INFO)
-#   # while True:
-#   # points = lightMoon(led_coords)
-#   # for i in points:
-#   #     print (led_coords[i[0]][0], led_coords[i[0]][1])
-#     # print (led_coords[point[0][0]])
-#     # if last != point:
-#     #   last = point
-#     # print (led_coords[point[0][0]])
-#     # sleep(5)
+            # modeButtonHeld()
+            print("shutdown")
+            colorWipe(strip, Color(0, 0, 0), 10)

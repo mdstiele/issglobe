@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "repl_python3_issglobe"
+version = "0.1.0"
+description = ""
+authors = ["MichaelStieler <<>>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+ephem = "^4.0.0"
+gpiozero = "^1.6.2"
+rpi-ws281x = "^4.3.0"
+geopy = "^2.2.0"
+global-land-mask = "^1.0.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
