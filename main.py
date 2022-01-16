@@ -10,6 +10,7 @@ import logging
 from time import sleep
 from os import system, name
 from subprocess import check_call
+import lcd1602 as LCD
 
 #mock devices
 # Device.pin_factory = MockFactory()
@@ -27,10 +28,25 @@ LED_BRIGHTNESS = 150     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
+# LCD pin configuration
+# #lcdk = gnd(p39)
+# #lcdA = 3v3(p17)
+# lcdD7 = gpio26(p37)
+# lcdD6 = gpio19(p35)
+# lcdD5 = gpio13(p33)
+# lcdD4 = gpio6(p31)
+# lcdE = gpio5(p29)
+# #lcdR/W = gnd(p25)
+# lcdRS = gpio11(p23)
+# #lcdov = pot mid
+# #lcdVcc = 5v(p4)
+# #lcdVss = gnd(p34)
+
 #button gpiozero settings
 BTN_PIN = 23
 
 #global currMode
+global lcd
 
 def modeButtonPressed():
     print('mode button pressed')
@@ -86,6 +102,11 @@ if __name__ == '__main__':
     #    logging.basicConfig(level=logging.DEBUG, force=True)
 
     try:
+        #initialize the LCD and set welcome message
+        lcd = LCD.LCD()
+        lcd.clear()
+        lcd.message("Welcome to --->\n  IssGlobe v0.1")
+
         lightarray.systemOn()
         #sleep(10)
         print('watching buttons..')
@@ -101,4 +122,27 @@ if __name__ == '__main__':
         if args.clear:
             # modeButtonHeld()
             print("shutdown")
-            colorWipe(strip, Color(0, 0, 0), 10)
+            colorWipe(strip, Color(0, 0, 0), 10) #call the lightarray clear or ledcontrol clear
+            lcd.clear()
+            lcd.destroy()
+
+	# line0 = " hello,world!"
+	# line1 = "SunFounder"
+
+	# lcd.clear()
+	# lcd.message("Welcome to --->\n  SunFounder")
+	# sleep(3)
+
+	# msg = "%s\n%s" % (line0, line1)
+	# while True:
+	# 	lcd.begin(0, 2)
+	# 	lcd.clear()
+	# 	for i in range(0, len(line0)):
+	# 		lcd.setCursor(i, 0)
+	# 		lcd.message(line0[i])
+	# 		sleep(0.1)
+	# 	for i in range(0, len(line1)):
+	# 		lcd.setCursor(i, 1)
+	# 		lcd.message(line1[i])
+	# 		sleep(0.1)
+	# 	sleep(1)
