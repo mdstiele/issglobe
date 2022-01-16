@@ -1,4 +1,5 @@
-from neopixel_mock_ms import Color
+from neopixel import Color
+#from neopixel_mock_ms import Color
 import time
 import logging
 # from colorzero import Color as Color2
@@ -27,7 +28,7 @@ def colorSetAll(strip, color):
   """Set color to each pixel all at same time."""
   for i in range(strip.numPixels()):
     strip.setPixelColor(i, color)
-  
+
 def colorAll(strip, color):
   """Set color to each pixel all at same time."""
   for i in range(strip.numPixels()):
@@ -81,7 +82,7 @@ def rainbowCycle(strip, wait_ms=20, iterations=5):
             strip.setPixelColor(i, wheel((int(i * 256 / strip.numPixels()) + j) & 255))
         strip.show()
         time.sleep(wait_ms/1000.0)
-        
+
 def wheel(pos):
     """Generate rainbow colors across 0-255 positions."""
     if pos < 85:
@@ -96,16 +97,16 @@ def wheel(pos):
 def protectionShow(strip):
   #switch to import and use lenth of strip
   #use strip.getpixels()
-  #count non 0 colors                                         
+  #count non 0 colors
   count = 0
-  for i in strip.getPixels():
+  #for i in strip.getPixels():
     # if (i[1] != Color(0,0,0)): #colorzero
       # count += 1
-    if (i[1] != Color(0,0,0)): #neopixel
+   # if (i != Color(0,0,0)): #neopixel
+    #  count += 1
+  for i in range(strip.numPixels()):
+    if (strip.getPixelColor(i) != Color(0,0,0)):
       count += 1
-  # for i in range(strip.numPixels()):
-  #   if (strip.getPixelColor(i) != Color(0,0,0)):
-  #     count += 1
 
   if count <= maxLedOn:
     logging.info("Protection show: {} LEDs on".format(count))
@@ -115,7 +116,7 @@ def protectionShow(strip):
     #do tests to see if can turn brightness down
 
 def rainbowColumnCycle(strip, columnArray, wait_ms=20, iterations=5):
-  numColumns = 32 #32 columns
+  numColumns = 32 #32 columns change to use calculated col num
   for j in range(256*iterations):
     for i in range(len(columnArray)):
       strip.setPixelColor(i,wheel((int(columnArray[i][1] * 256 / numColumns) + j) & 255))

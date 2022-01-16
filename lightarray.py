@@ -14,6 +14,7 @@ from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, rainbo
 import logging
 from neopixel_mock_ms import Color
 from mapplot import plot
+import copy
 
 degrees_per_radian = 180.0 / math.pi
 sun = ephem.Sun()
@@ -28,8 +29,8 @@ moonLightColor = Color(255,0,255) #light blue
 issLightColor = Color(0,255,0) #red
 totalNumLed = 40 #total number of leds on system
 statusLed = 41 #number in chain of the status led
-# currMode = 0 #the current mode, starts at 0
-defaultMode = 3 #defualt mode when the system starts
+currMode = 0 #the current mode, starts at 0
+defaultMode = 0 #defualt mode when the system starts
 
 ledCoordsDir = "ledcoords.txt"#"ledcoords.txt"#"/home/pi/issglobe/ledcoords.txt"
 
@@ -60,7 +61,8 @@ def compute_row_col_list(pointarray):
 # Lightarray class object will hold all variables related to the coordinates and also
 #   the coord/led interaction
 class Lightarray:
-  def __init__(self):
+  def __init__(self, strip):
+    self.ledstrip = strip
     #sets led coord data to a tuple array
     self.ledcoords = readLedCoords()
     #num of pixels(leds)
@@ -79,6 +81,19 @@ class Lightarray:
     self.isslightsArray = []
     self.sunlightsArray = []
     self.moonlightsArray = []
+
+  def setStrip(self, strip):
+    self.ledstrip = strip
+
+  def getStrip(self):
+    return self.ledstrip
+
+  def systemOn(self):
+    scrollup(self.ledstrip, self.getLedCoords())
+
+  def systemOff(self):
+    #LightArray.getLedCoords()
+    scrolldown(self.ledstrip, self.getLedCoords())
 
   def getLedCoords(self):
     return self.ledcoords
@@ -107,19 +122,12 @@ class Lightarray:
     self.sunlightsArray = []
     self.moonlightsArray = []
 
-  # def compute_row_col_list(self):
-  #   rowlist = []
-  #   collist = []
-  #   for i in self.getLedCoords():
-  #     if i[0] not in rowlist:
-  #       rowlist.append(i[1])
-  #     if i[1] not in collist:
-  #       collist.append(i[0])
-  #   print(rowlist)
-  #   self.led_row_list = rowlist
-  #   self.led_col_list = collist
-  #   self.num_of_led_row = len(rowlist)
-  #   self.num_of_led_col = len(collist)
+  def changeMode(self):
+    #call this when button press
+    modeList = [1,2,3,4,0]
+    #currMode = modeList[currMode]
+    self.mode = modeList[self.mode]
+    print("mode is now " + str(self.mode))
 
   def get_led_row_list(self):
     return self.led_row_list
@@ -141,7 +149,7 @@ class Lightarray:
       # print("0iss")
       plottraillength = 35
       for i in lightIss(self.ledcoords):
-        self.lightsArray.append(i)        
+        self.lightsArray.append(i)
     elif (int(self.mode) == 1):
       # print("1sun")
       for i in lightSun(self.ledcoords):
@@ -171,16 +179,18 @@ class Lightarray:
       # plot(self, self.lightsArray, self.ledcoords, plottraillength)
       plot(self, plottraillength)
     protectionShow(strip)
-    # print(lightsArray)         
+    # print(lightsArray)
 
   def runMultiMode(self, strip):
+    #oldstrip = strip.getPixels()
     isplottable = True #remove later
     issplottraillength = 0
+    oldlightarray = self.lightsArray
     self.lightsArray = []
     self.isslightsArray = []
     self.sunlightsArray = []
     self.moonlightsArray = []
-    self.showIss = self.showSun = self.showMoon = False    
+    self.showIss = self.showSun = self.showMoon = False
     if (int(self.mode) == 0):
       # print("0iss")
       self.showIss = True
@@ -202,27 +212,29 @@ class Lightarray:
       issplottraillength = 35
       for i in lightIss(self.ledcoords):
         self.isslightsArray.append(i)
-    
+        self.lightsArray.append(i)
+
     if (bool(self.showSun) == True):
       # print("1sun")
       for i in lightSun(self.ledcoords):
         self.sunlightsArray.append(i)
-    
+
     if (bool(self.showMoon) == True):
       # print("2moon")
       for i in lightMoon(self.ledcoords):
         self.moonlightsArray.append(i)
 
-    colorSetAll(strip, Color(0,0,0))
-    for i in self.lightsArray:
-      logging.debug(i)
-      strip.setPixelColor(i[0], i[1])
+    if (oldlightarray != self.lightsArray):
+      colorSetAll(strip, Color(0,0,0))
+      for i in self.lightsArray:
+        logging.debug(i)
+        strip.setPixelColor(i[0], i[1])
 
-    if logging.getLogger().getEffectiveLevel()==(logging.DEBUG) and isplottable:
-      # plot(self, self.lightsArray, self.ledcoords, plottraillength)
-      plot(self, issplottraillength)
-    protectionShow(strip)
-    # print(lightsArray)           
+      if logging.getLogger().getEffectiveLevel()==(logging.DEBUG) and isplottable:
+        # plot(self, self.lightsArray, self.ledcoords, plottraillength)
+        plot(self, issplottraillength)
+      protectionShow(strip)
+    # print(lightsArray)
 
 def updateIssTleData():
   # check internet connection
@@ -235,7 +247,7 @@ def updateIssTleData():
     tle = r.data.decode('utf-8').split("\n")[0:3]
     f = open("isstle.txt", "w")
     f.write(tle[0] + "\n" + tle[1] + "\n" + tle[2] + "\n" + "updated: " + str(datetime.now()))
-  
+
   f = open("isstle.txt", "r")
   tle = f.read().split("\n")[0:3]
   return tle
@@ -288,10 +300,10 @@ def getClosestPoint(lat, lon, pointArray):
   # pointlong1 = (pointArray[point][0] + 180) % 360 - 180
   logging.debug("closest point is: {}: ({}, {}) with distance of: {}".format(point, pointArray[point][1], pointArray[point][0], minDist))
   # logging.debug("Point {} has a calculated longitude of {}".format(point, pointlong1))
-  
+
 #   print (lat,lon,pointArray[point][0], pointArray[point][1])
   # print (point, pointArray[point], minDist)
-  
+
   return point
 
 def getClosestPoints(lat, lon, pointArray, amount):
@@ -385,44 +397,31 @@ def lightIss(pointArray):
 class TimeoutExpired(Exception):
   pass
 
-def input_with_timeout(prompt, timeout):
-  sys.stdout.write(prompt)
-  sys.stdout.flush()
-  ready, _, _ = select.select([sys.stdin], [],[], timeout)
-  if ready:
-    return sys.stdin.readline().rstrip('\n') # expect stdin to be line-buffered
-  raise TimeoutExpired
+#def input_with_timeout(prompt, timeout):
+#  sys.stdout.write(prompt)
+#  sys.stdout.flush()
+#  ready, _, _ = select.select([sys.stdin], [],[], timeout)
+#  if ready:
+#    return sys.stdin.readline().rstrip('\n') # expect stdin to be line-buffered
+#  raise TimeoutExpired
 
-def chkChangeMode(timer, currMode):
-  try:
-    answer = input_with_timeout("Mode:", timer)
-  except TimeoutExpired:
-    logging.debug("Cycle Complete: Mode staying at %d" % int(currMode))
-    return currMode
-  else:
-    if (int(answer) >= 0) and (int(answer) <= 4):
-      currMode = answer
-    logging.info('Mode updated to %s' % int(currMode))
-    return currMode
+#def chkChangeMode(timer, currMode):
+ # try:
+  #  answer = input_with_timeout("Mode:", timer)
+  #except TimeoutExpired:
+  #  logging.debug("Cycle Complete: Mode staying at %d" % int(currMode))
+  #  return currMode
+  #else:
+  #  if (int(answer) >= 0) and (int(answer) <= 4):
+  #    currMode = answer
+  #  logging.info('Mode updated to %s' % int(currMode))
+  #  return currMode
 
-def changeMode(currMode):
-  #call this when button press
-  modeList = [1,2,3,4,0]
-  currMode = modeList[currMode]
-  return currMode
-  
 # def createHeightArray(pointArray):
 #   heightArray = []
 #   for i in pointArray:
 #     heightArray.append(i[1])
 #   return heightArray
-
-def systemOn(LightArray, strip):
-  scrollup(strip, LightArray.getLedCoords())
-
-def systemOff(LightArray, strip):
-  LightArray.getLedCoords()
-  scrolldown(strip, LightArray.getLedCoords())
 
 # def getColumnArray(pointArray):
 #   #get array of points with each (point,column)

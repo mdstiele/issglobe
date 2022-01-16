@@ -91,8 +91,7 @@ def plot(lightarray, traillength=0):
           # landcoords[LandBool.index((i,j))]
         else:
           map = True
-      
-      
+
       if(iss):
         string = string + " I "
       elif(trail):
@@ -122,7 +121,7 @@ def plot(lightarray, traillength=0):
       pastpoints.popleft()
 
 # if __name__ == '__main__':
-  
+
 #   # print(pointArray)
 #   lightArray = [(283, "Color"),(120, "Color")]
 #   plot(lightArray)
