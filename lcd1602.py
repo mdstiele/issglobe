@@ -196,7 +196,7 @@ class LCD:
 
 	def message(self, text):
 		# Send string to LCD. Newline wraps to second line
-		print ("message: %s")%text
+		#print ("message: %s")%text
 		for char in text:
 			if char == '\n':
 				self.write4bits(0xC0) # next line

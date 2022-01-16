@@ -14,7 +14,8 @@ from ledcontrol import scrollup, scrolldown, protectionShow, colorSetAll, rainbo
 import logging
 from neopixel_mock_ms import Color
 from mapplot import plot
-import copy
+#import copy
+#from main import lcd
 
 degrees_per_radian = 180.0 / math.pi
 sun = ephem.Sun()
@@ -81,6 +82,7 @@ class Lightarray:
     self.isslightsArray = []
     self.sunlightsArray = []
     self.moonlightsArray = []
+    self.lcd = None
 
   def setStrip(self, strip):
     self.ledstrip = strip
@@ -140,6 +142,15 @@ class Lightarray:
 
   def get_num_of_led_col(self):
     return self.num_of_led_col
+
+  def setlcd(self, LCD):
+    self.lcd = LCD
+
+  def lcdmode(self):
+    if (int(self.mode) == 0):
+      # iss lcd mode
+      self.lcd.clear()
+      self.lcd.message(str(strlocateiss()))
 
   def runMode(self, strip):
     isplottable = True
@@ -223,6 +234,8 @@ class Lightarray:
       # print("2moon")
       for i in lightMoon(self.ledcoords):
         self.moonlightsArray.append(i)
+
+    self.lcdmode()
 
     if (oldlightarray != self.lightsArray):
       colorSetAll(strip, Color(0,0,0))
@@ -393,6 +406,27 @@ def lightIss(pointArray):
   lightsArray = [(getClosestPoint(isslat, isslong, pointArray),issLightColor)]
   # lightsArray = [(getClosestPoint(37, 160, pointArray),issLightColor)]
   return lightsArray
+
+# returns iss lan/lon string form
+def strlocateiss():
+  tle = updateIssTleData()
+  line1 = tle[0]
+  line2 = tle[1]
+  line3 = tle[2]
+  iss = ephem.readtle(line1, line2, line3)
+  iss.compute()
+  isslong = round((iss.sublong / degree), 1)
+  if (isslong >= 0):
+    isslong = str(isslong) + " E"
+  else:
+    isslong = str(abs(isslong)) + " W"
+  isslat = round((iss.sublat / degree), 1)
+  if (isslat >= 0):
+    isslat = str(isslat) + " N"
+  else:
+    isslat = str(abs(isslat)) + " S"
+  locationmsg = ("ISS Lat: %s \n Lon: %s" % (isslat, isslong))
+  return locationmsg
 
 class TimeoutExpired(Exception):
   pass

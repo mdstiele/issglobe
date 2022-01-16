@@ -46,7 +46,7 @@ LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 BTN_PIN = 23
 
 #global currMode
-global lcd
+#global lcd
 
 def modeButtonPressed():
     print('mode button pressed')
@@ -104,6 +104,7 @@ if __name__ == '__main__':
     try:
         #initialize the LCD and set welcome message
         lcd = LCD.LCD()
+        lightarray.setlcd(lcd)
         lcd.clear()
         lcd.message("Welcome to --->\n  IssGlobe v0.1")
 
