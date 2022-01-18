@@ -43,7 +43,7 @@ if __name__ == '__main__':
         lcd = LCD.lcdclock()
         lightarray.setlcd(lcd)
         #lcd.clear()
-        lcd.printwelcome()  #("Welcome to --->\n  IssGlobe v0.1")
+        lcd.printwelcome()
 
         lightarray.systemOn()
         #sleep(10)

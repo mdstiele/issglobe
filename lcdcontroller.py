@@ -5,7 +5,7 @@ import pi_ic2_lib
 from threading import Thread
 from time import sleep
 
-class lcdclock:
+class lcd:
   def __init__(self):
     self._running = True
     self.mylcd = pi_ic2_lib.lcd()
@@ -15,10 +15,39 @@ class lcdclock:
     sleep(.5)
     self.mylcd.lcd_clear()
 
+  #this clear should only clear the first two rows after the icon
+  def clear(self):
+    return None
+
+  def printwelcome(self):
+    self.printicon()
+    self.mylcd.lcd_display_string_pos("Welcome to --->",1,4) # row 1, column 1
+    self.mylcd.lcd_display_string_pos("IssGlobe v0.1",2,4) # row 1, column 1
+
+  def printmsg(self, line1, line2):
+    self.mylcd.lcd_display_string_pos(str(line1),1,4) # row 1, column 1
+    self.mylcd.lcd_display_string_pos(str(line2),2,4) # row 1, column 1
+
+  def printicon(self):
+    self.loadcustomchar()
+    self.mylcd.lcd_write(0x80)
+    self.mylcd.lcd_write_char(0)
+    self.mylcd.lcd_write_char(1)
+    self.mylcd.lcd_write_char(2)
+    self.mylcd.lcd_write(0xC0)
+    self.mylcd.lcd_write_char(3)
+    self.mylcd.lcd_write_char(4)
+    self.mylcd.lcd_write_char(5)
+
   def showclock(self):
     while self._running:
       self.mylcd.lcd_display_string('{:^20}'.format(time.strftime('%I:%M:%S %p')), 3)
       self.mylcd.lcd_display_string('{:^20}'.format(time.strftime('%a %b %d, 20%y')), 4)
+
+  def showclockthread(self):
+    lcdclkthread = Thread(target=self.showclock)
+    lcdclkthread.start()
+    lcdclkthread.join()
 
   def loadcustomchar(self):
     # let's define a custom icon, consisting of 6 individual characters
@@ -40,23 +69,6 @@ class lcdclock:
     # Load logo chars (fontdata1)
     self.mylcd.lcd_load_custom_chars(fontdata1)
 
-  def showcustomchar(self):
-    self.mylcd.lcd_write(0x80)
-    self.mylcd.lcd_write_char(0)
-    self.mylcd.lcd_write_char(1)
-    self.mylcd.lcd_write_char(2)
-    self.mylcd.lcd_write(0xC0)
-    self.mylcd.lcd_write_char(3)
-    self.mylcd.lcd_write_char(4)
-    self.mylcd.lcd_write_char(5)
-
-if __name__ == '__main__':
-  try:
-    lcdclk = lcdclock()
-    lcdclk.loadcustomchar()
-    lcdclkthread = Thread(target=lcdclk.showclock)
-    lcdclkthread.start()
-    lcdclkthread.join()
-
-  except KeyboardInterrupt:
-    lcdclk.terminate()
+# if __name__ == '__main__':
+#   try:
+#   except KeyboardInterrupt:

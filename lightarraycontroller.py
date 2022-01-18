@@ -140,7 +140,8 @@ class Lightarray:
         if (int(self.mode) == 0):
             # iss lcd mode
             self.lcd.clear()
-            self.lcd.message(str(strlocateiss()))
+            msgline1, msgline2 = strlocateiss()
+            self.lcd.printmsg(str(msgline1), str(msgline2))
 
     def runMode(self, strip):
         isplottable = True
@@ -404,8 +405,9 @@ def strlocateiss():
         isslat = str(isslat) + " N"
     else:
         isslat = str(abs(isslat)) + " S"
-    locationmsg = ("ISS Lat: %s \n Lon: %s" % (isslat, isslong))
-    return locationmsg
+    locationmsg1 = ("ISS Lat: %s" % (isslat))
+    locationmsg2 = ("Lon: %s" % (isslong))
+    return locationmsg1, locationmsg2
 
 
 class TimeoutExpired(Exception):
