@@ -1,5 +1,5 @@
 from gpiozero import Button
-from issglobe import sysshutdown
+from systemcontroller import sysshutdown
 import issglobeconfig as cfg
 
 class btncontroller:

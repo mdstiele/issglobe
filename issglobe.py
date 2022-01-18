@@ -3,26 +3,11 @@ from neopixel import Adafruit_NeoPixel
 import argparse
 import logging
 #from time import sleep
-from os import system, name
-from subprocess import check_call
 import lcd1602 as LCD
 from buttoncontroller import btncontroller
 import issglobeconfig as cfg
 
 logging.basicConfig(level=logging.INFO) #, force = True)
-
-#Clear the console
-def clear():
-    # for windows
-    if name == 'nt':
-        _ = system('cls')
-
-    # for mac and linux(here, os.name is 'posix')
-    else:
-        _ = system('clear')
-
-def sysshutdown():
-  check_call(['sudo', 'poweroff'])
 
 # Main program logic follows:
 if __name__ == '__main__':
