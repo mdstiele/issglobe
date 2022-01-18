@@ -1,20 +1,7 @@
 from neopixel import Color
-#from neopixel_mock_ms import Color
 import time
 import logging
-# from colorzero import Color as Color2
-
-# # LED strip configuration:
-# LED_COUNT      = 16      # Number of LED pixels.
-# LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
-# #LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
-# LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
-# LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
-# LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
-# LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
-# LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53                
-
-maxLedOn = 200 #max number of leds that should be on to stay under amp rating
+import issglobeconfig as cfg
 
 # Define functions which animate LEDs in various ways.
 def colorWipe(strip, color, wait_ms=50):
@@ -95,25 +82,16 @@ def wheel(pos):
         return Color(0, pos * 3, 255 - pos * 3)
 
 def protectionShow(strip):
-  #switch to import and use lenth of strip
-  #use strip.getpixels()
-  #count non 0 colors
   count = 0
-  #for i in strip.getPixels():
-    # if (i[1] != Color(0,0,0)): #colorzero
-      # count += 1
-   # if (i != Color(0,0,0)): #neopixel
-    #  count += 1
   for i in range(strip.numPixels()):
     if (strip.getPixelColor(i) != Color(0,0,0)):
       count += 1
 
-  if count <= maxLedOn:
+  if count <= cfg.maxLedOn:
     logging.info("Protection show: {} LEDs on".format(count))
     strip.show()
   else:
     logging.error("{} LEDs is over threshold, overload prevention activated".format(count))
-    #do tests to see if can turn brightness down
 
 def rainbowColumnCycle(strip, columnArray, wait_ms=20, iterations=5):
   numColumns = 32 #32 columns change to use calculated col num

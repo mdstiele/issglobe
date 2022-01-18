@@ -119,9 +119,3 @@ def plot(lightarray, traillength=0):
         pastpoints.append(led)
     while len(pastpoints)>traillength:
       pastpoints.popleft()
-
-# if __name__ == '__main__':
-
-#   # print(pointArray)
-#   lightArray = [(283, "Color"),(120, "Color")]
-#   plot(lightArray)
