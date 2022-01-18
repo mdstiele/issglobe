@@ -50,10 +50,10 @@ if __name__ == '__main__':
         #initialize the neopixel strip
         strip = Adafruit_NeoPixel(cfg.LED_COUNT, cfg.ED_PIN, cfg.LED_FREQ_HZ, cfg.LED_DMA, cfg.LED_INVERT, cfg.LED_BRIGHTNESS, cfg.LED_CHANNEL)  # Create NeoPixel object with appropriate configuration.
         strip.begin() # Intialize the library (must be called once before other functions).
-        
+
         #initialize the lightarray
         lightarray = Lightarray(strip)
-        
+
         #initialize the LCD and set welcome message
         lcd = LCD.LCD()
         lightarray.setlcd(lcd)
@@ -78,6 +78,9 @@ if __name__ == '__main__':
             lightarray.wipecolorstrip()
             lcd.clear()
             lcd.destroy()
+
+
+
 
 	# line0 = " hello,world!"
 	# line1 = "SunFounder"

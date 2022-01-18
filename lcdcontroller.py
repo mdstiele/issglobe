@@ -2,15 +2,25 @@
 
 import time
 import pi_ic2_lib
+from threading import Thread
+from time import sleep
 
-mylcd = pi_ic2_lib.lcd()
+class lcdclock:
+  def __init__(self):
+    self._running = True
+    self.mylcd = pi_ic2_lib.lcd()
 
-def showclock():
-  while True:
-    mylcd.lcd_display_string(time.strftime('%I:%M:%S %p'), 3)
-    mylcd.lcd_display_string(time.strftime('%a %b %d, 20%y'), 4)
+  def terminate(self):
+    self._running = False
+    sleep(.5)
+    self.mylcd.lcd_clear()
 
-def showcustomchar():
+  def showclock(self):
+    while self._running:
+      self.mylcd.lcd_display_string('{:^20}'.format(time.strftime('%I:%M:%S %p')), 3)
+      self.mylcd.lcd_display_string('{:^20}'.format(time.strftime('%a %b %d, 20%y')), 4)
+
+  def loadcustomchar(self):
     # let's define a custom icon, consisting of 6 individual characters
     # 3 chars in the first row and 3 chars in the second row
     fontdata1 = [
@@ -28,4 +38,25 @@ def showcustomchar():
       [ 0x19, 0x1D, 0x1E, 0x1E, 0x1C, 0x18, 0x00, 0x00 ],
     ]
     # Load logo chars (fontdata1)
-    mylcd.lcd_load_custom_chars(fontdata1)
+    self.mylcd.lcd_load_custom_chars(fontdata1)
+
+  def showcustomchar(self):
+    self.mylcd.lcd_write(0x80)
+    self.mylcd.lcd_write_char(0)
+    self.mylcd.lcd_write_char(1)
+    self.mylcd.lcd_write_char(2)
+    self.mylcd.lcd_write(0xC0)
+    self.mylcd.lcd_write_char(3)
+    self.mylcd.lcd_write_char(4)
+    self.mylcd.lcd_write_char(5)
+
+if __name__ == '__main__':
+  try:
+    lcdclk = lcdclock()
+    lcdclk.loadcustomchar()
+    lcdclkthread = Thread(target=lcdclk.showclock)
+    lcdclkthread.start()
+    lcdclkthread.join()
+
+  except KeyboardInterrupt:
+    lcdclk.terminate()
