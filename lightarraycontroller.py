@@ -112,7 +112,7 @@ class Lightarray:
         self.moonlightsArray = []
 
     def wipecolorstrip(self):
-        colorAll(self.strip, Color(0, 0, 0))
+        colorAll(self.ledstrip, Color(0, 0, 0))
 
     def changeMode(self):
         #call this when button press
@@ -184,7 +184,7 @@ class Lightarray:
         protectionShow(strip)
         # print(lightsArray)
 
-    def runMultiMode(self, strip):
+    def runMultiMode(self):
         #oldstrip = strip.getPixels()
         isplottable = True  #remove later
         issplottraillength = 0
@@ -208,7 +208,7 @@ class Lightarray:
             self.showIss = self.showSun = self.showMoon = True
         elif (int(self.mode) == 4):
             isplottable = False
-            rainbowColumnCycle(strip, self.led_col_list)
+            rainbowColumnCycle(self.ledstrip, self.led_col_list)
 
         if (bool(self.showIss) == True):
             # print("0iss")
@@ -230,16 +230,16 @@ class Lightarray:
         self.lcdmode()
 
         if (oldlightarray != self.lightsArray):
-            colorSetAll(strip, Color(0, 0, 0))
+            colorSetAll(self.ledstrip, Color(0, 0, 0))
             for i in self.lightsArray:
                 logging.debug(i)
-                strip.setPixelColor(i[0], i[1])
+                self.ledstrip.setPixelColor(i[0], i[1])
 
             if logging.getLogger().getEffectiveLevel() == (
                     logging.DEBUG) and isplottable:
                 # plot(self, self.lightsArray, self.ledcoords, plottraillength)
                 plot(self, issplottraillength)
-            protectionShow(strip)
+            protectionShow(self.ledstrip)
         # print(lightsArray)
 
 

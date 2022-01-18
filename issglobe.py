@@ -3,7 +3,7 @@ from neopixel import Adafruit_NeoPixel
 import argparse
 import logging
 #from time import sleep
-import lcd1602 as LCD
+import lcdcontroller as LCD
 from buttoncontroller import btncontroller
 import issglobeconfig as cfg
 
@@ -33,17 +33,17 @@ if __name__ == '__main__':
 
     try:
         #initialize the neopixel strip
-        strip = Adafruit_NeoPixel(cfg.LED_COUNT, cfg.ED_PIN, cfg.LED_FREQ_HZ, cfg.LED_DMA, cfg.LED_INVERT, cfg.LED_BRIGHTNESS, cfg.LED_CHANNEL)  # Create NeoPixel object with appropriate configuration.
+        strip = Adafruit_NeoPixel(cfg.LED_COUNT, cfg.LED_PIN, cfg.LED_FREQ_HZ, cfg.LED_DMA, cfg.LED_INVERT, cfg.LED_BRIGHTNESS, cfg.LED_CHANNEL)  # Create NeoPixel object with appropriate configuration.
         strip.begin() # Intialize the library (must be called once before other functions).
 
         #initialize the lightarray
         lightarray = Lightarray(strip)
 
         #initialize the LCD and set welcome message
-        lcd = LCD.LCD()
+        lcd = LCD.lcdclock()
         lightarray.setlcd(lcd)
-        lcd.clear()
-        lcd.message("Welcome to --->\n  IssGlobe v0.1")
+        #lcd.clear()
+        lcd.printwelcome()  #("Welcome to --->\n  IssGlobe v0.1")
 
         lightarray.systemOn()
         #sleep(10)
@@ -53,16 +53,16 @@ if __name__ == '__main__':
 
         while True:
 #            clear()
-            lightarray.runMultiMode(strip)
+            lightarray.runMultiMode()
             #sleep(refreshseconds)
 
     except KeyboardInterrupt:
         if args.clear:
             # modeButtonHeld()
-            print("shutdown")
+            print("\n shutdown")
             lightarray.wipecolorstrip()
-            lcd.clear()
-            lcd.destroy()
+            lcd.terminate()
+            #lcd.destroy()
 
 
 
