@@ -7,26 +7,28 @@ from time import sleep
 
 class lcd:
   def __init__(self):
-    self._running = True
+    #self._running = True
     self.mylcd = pi_ic2_lib.lcd()
+    #self.showclockthread()
 
   def terminate(self):
-    self._running = False
+    #self._running = False
     sleep(.5)
     self.mylcd.lcd_clear()
 
   #this clear should only clear the first two rows after the icon
   def clear(self):
-    return None
+    self.mylcd.lcd_display_string_pos("                 ",1,4) # row 1, column 4-20
+    self.mylcd.lcd_display_string_pos("                 ",2,4) # row 2, column 4-20
 
   def printwelcome(self):
     self.printicon()
-    self.mylcd.lcd_display_string_pos("Welcome to --->",1,4) # row 1, column 1
-    self.mylcd.lcd_display_string_pos("IssGlobe v0.1",2,4) # row 1, column 1
+    self.mylcd.lcd_display_string_pos("Welcome to --->",1,4) # row 1, column 4
+    self.mylcd.lcd_display_string_pos("IssGlobe v0.1",2,4) # row 2, column 4
 
   def printmsg(self, line1, line2):
-    self.mylcd.lcd_display_string_pos(str(line1),1,4) # row 1, column 1
-    self.mylcd.lcd_display_string_pos(str(line2),2,4) # row 1, column 1
+    self.mylcd.lcd_display_string_pos(str(line1),1,4) # row 1, column 4
+    self.mylcd.lcd_display_string_pos(str(line2),2,4) # row 2, column 4
 
   def printicon(self):
     self.loadcustomchar()
@@ -39,15 +41,20 @@ class lcd:
     self.mylcd.lcd_write_char(4)
     self.mylcd.lcd_write_char(5)
 
-  def showclock(self):
-    while self._running:
-      self.mylcd.lcd_display_string('{:^20}'.format(time.strftime('%I:%M:%S %p')), 3)
-      self.mylcd.lcd_display_string('{:^20}'.format(time.strftime('%a %b %d, 20%y')), 4)
+  def printclock(self):
+    self.mylcd.lcd_display_string('{:^20}'.format(time.strftime('%I:%M %p')), 3)
+    self.mylcd.lcd_display_string('{:^20}'.format(time.strftime('%a %b %d, 20%y')), 4)
 
-  def showclockthread(self):
-    lcdclkthread = Thread(target=self.showclock)
-    lcdclkthread.start()
-    lcdclkthread.join()
+  # def showclock(self):
+    # while self._running:
+      # self.mylcd.lcd_display_string('{:^20}'.format(time.strftime('%I:%M:%S %p')), 3)
+      # self.mylcd.lcd_display_string('{:^20}'.format(time.strftime('%a %b %d, 20%y')), 4)
+      # sleep(15)
+
+  # def showclockthread(self):
+    # lcdclkthread = Thread(target=self.showclock)
+    # lcdclkthread.start()
+    # lcdclkthread.join()
 
   def loadcustomchar(self):
     # let's define a custom icon, consisting of 6 individual characters

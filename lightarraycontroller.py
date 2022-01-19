@@ -65,6 +65,7 @@ class Lightarray:
         self.led_is_land = []
         #current mode
         self.mode = cfg.defaultMode
+        self.prevmode = (-1) #set to -1 so that it is always changed on first run
         self.lightsArray = []
         self.isslightsArray = []
         self.sunlightsArray = []
@@ -137,11 +138,14 @@ class Lightarray:
         self.lcd = LCD
 
     def lcdmode(self):
-        if (int(self.mode) == 0):
-            # iss lcd mode
+        if (int(self.mode) != int(self.prevmode)):
             self.lcd.clear()
+            self.prevmode = int(self.mode)
+        # Iss lcd mode
+        if (int(self.mode) == 0):
             msgline1, msgline2 = strlocateiss()
             self.lcd.printmsg(str(msgline1), str(msgline2))
+            self.lcd.printclock()
 
     def runMode(self, strip):
         isplottable = True
@@ -406,7 +410,7 @@ def strlocateiss():
     else:
         isslat = str(abs(isslat)) + " S"
     locationmsg1 = ("ISS Lat: %s" % (isslat))
-    locationmsg2 = ("Lon: %s" % (isslong))
+    locationmsg2 = (" Lon: %s" % (isslong))
     return locationmsg1, locationmsg2
 
 

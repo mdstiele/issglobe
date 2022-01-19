@@ -2,10 +2,14 @@ from lightarraycontroller import Lightarray
 from neopixel import Adafruit_NeoPixel
 import argparse
 import logging
-#from time import sleep
+from threading import Thread
+from time import sleep
 import lcdcontroller as LCD
 from buttoncontroller import btncontroller
 import issglobeconfig as cfg
+
+from gpiozero import Button
+
 
 logging.basicConfig(level=logging.INFO) #, force = True)
 
@@ -22,9 +26,9 @@ if __name__ == '__main__':
     args.verbose = 40 - (10*args.verbose) if args.verbose > 0 else 0
     logging.basicConfig(level=args.verbose, force=True, format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
-    print ('Press Ctrl-C to quit.')
+    logging.info('Press Ctrl-C to quit.')
     if not args.clear:
-    	print('Use "-c" argument to clear LEDs on exit')
+    	logging.info('Use "-c" argument to clear LEDs on exit')
 
     #if args.verbosei:
     #    logging.basicConfig(level=logging.INFO, force=True)
@@ -40,9 +44,12 @@ if __name__ == '__main__':
         lightarray = Lightarray(strip)
 
         #initialize the LCD and set welcome message
-        lcd = LCD.lcdclock()
+        lcd = LCD.lcd()
         lightarray.setlcd(lcd)
-        #lcd.clear()
+        #lcd.showclockthread()
+        #lcdclkthread = Thread(target=lcd.showclock)
+        #lcdclkthread.start()
+        #lcdclkthread.join()
         lcd.printwelcome()
 
         lightarray.systemOn()
@@ -50,16 +57,19 @@ if __name__ == '__main__':
 
         #initialize the button controller
         btncontroller = btncontroller(lightarray)
+        modeButton = Button(cfg.mode_BTN_PIN, hold_time=5) #bounce_time=.5, hold_time=7)
+        # print('watching buttons..')
+        modeButton.when_pressed = btncontroller.modeButtonPressed
 
         while True:
 #            clear()
             lightarray.runMultiMode()
-            #sleep(refreshseconds)
+            #sleep(15)
 
     except KeyboardInterrupt:
         if args.clear:
             # modeButtonHeld()
-            print("\n shutdown")
+            logging.info("\n shutdown")
             lightarray.wipecolorstrip()
             lcd.terminate()
             #lcd.destroy()
