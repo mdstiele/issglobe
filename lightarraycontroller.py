@@ -1,9 +1,8 @@
 
 # from math import sin, cos, sqrt, atan2, radians
 import math
-#import time
+import datetime
 import ephem
-from ephem import degree
 from geopy import distance as gdistance
 
 #from threading import Timer
@@ -120,7 +119,7 @@ class Lightarray:
         modeList = [1, 2, 3, 4, 0]
         #currMode = modeList[currMode]
         self.mode = modeList[self.mode]
-        print("mode is now " + str(self.mode))
+        logging.info("mode is now " + str(self.mode))
 
     def get_led_row_list(self):
         return self.led_row_list
@@ -146,48 +145,53 @@ class Lightarray:
             msgline1, msgline2 = strlocateiss()
             self.lcd.printmsg(str(msgline1), str(msgline2))
             self.lcd.printclock()
+        # Iss lcd mode
+        if (int(self.mode) == 1):
+            msgline1, msgline2 = strlocatesun()
+            self.lcd.printmsg(str(msgline1), str(msgline2))
+            self.lcd.printclock()
 
-    def runMode(self, strip):
-        isplottable = True
-        plottraillength = 0
-        self.lightsArray = []
-        if (int(self.mode) == 0):
-            # print("0iss")
-            plottraillength = 35
-            for i in lightIss(self.ledcoords):
-                self.lightsArray.append(i)
-        elif (int(self.mode) == 1):
-            # print("1sun")
-            for i in lightSun(self.ledcoords):
-                self.lightsArray.append(i)
-        elif (int(self.mode) == 2):
-            # print("2moon")
-            for i in lightMoon(self.ledcoords):
-                self.lightsArray.append(i)
-        elif (int(self.mode) == 3):
-            # print("3all")
-            for i in lightSun(self.ledcoords):
-                self.lightsArray.append(i)
-            for i in lightMoon(self.ledcoords):
-                self.lightsArray.append(i)
-            for i in lightIss(self.ledcoords):
-                self.lightsArray.append(i)
-        elif (int(self.mode) == 4):
-            isplottable = False
-            rainbowColumnCycle(
-                strip, self.led_col_list)  #getColumnArray(self.ledcoords))
+    # def runMode(self, strip):
+        # isplottable = True
+        # plottraillength = 0
+        # self.lightsArray = []
+        # if (int(self.mode) == 0):
+            ##print("0iss")
+            # plottraillength = 35
+            # for i in lightIss(self.ledcoords):
+                # self.lightsArray.append(i)
+        # elif (int(self.mode) == 1):
+            ##print("1sun")
+            # for i in lightSun(self.ledcoords):
+                # self.lightsArray.append(i)
+        # elif (int(self.mode) == 2):
+            ##print("2moon")
+            # for i in lightMoon(self.ledcoords):
+                # self.lightsArray.append(i)
+        # elif (int(self.mode) == 3):
+            ##print("3all")
+            # for i in lightSun(self.ledcoords):
+                # self.lightsArray.append(i)
+            # for i in lightMoon(self.ledcoords):
+                # self.lightsArray.append(i)
+            # for i in lightIss(self.ledcoords):
+                # self.lightsArray.append(i)
+        # elif (int(self.mode) == 4):
+            # isplottable = False
+            # rainbowColumnCycle(
+                # strip, self.led_col_list)  #getColumnArray(self.ledcoords))
 
-        colorSetAll(strip, Color(0, 0, 0))
-        for i in self.lightsArray:
-            logging.debug(i)
-            strip.setPixelColor(i[0], i[1])
+        # colorSetAll(strip, Color(0, 0, 0))
+        # for i in self.lightsArray:
+            # logging.debug(i)
+            # strip.setPixelColor(i[0], i[1])
 
-        if logging.getLogger().getEffectiveLevel() == (
-                logging.DEBUG) and isplottable:
-            # plot(self, self.lightsArray, self.ledcoords, plottraillength)
-            plot(self, plottraillength)
-        protectionShow(strip)
-        # print(lightsArray)
+        # if logging.getLogger().getEffectiveLevel() == (
+                # logging.DEBUG) and isplottable:
+            ##plot(self, self.lightsArray, self.ledcoords, plottraillength)
+            # plot(self, plottraillength)
+        # protectionShow(strip)
+        ##print(lightsArray)
 
     def runMultiMode(self):
         #oldstrip = strip.getPixels()
@@ -226,11 +230,13 @@ class Lightarray:
             # print("1sun")
             for i in lightSun(self.ledcoords):
                 self.sunlightsArray.append(i)
+                self.lightsArray.append(i)
 
         if (bool(self.showMoon) == True):
             # print("2moon")
             for i in lightMoon(self.ledcoords):
                 self.moonlightsArray.append(i)
+                self.lightsArray.append(i)
 
         self.lcdmode()
 
@@ -342,27 +348,60 @@ def calcDist(lat1, lon1, lat2, lon2):
 
 
 def lightSun(pointArray):
-    cfg.sun.compute()
-    sun_lon = math.degrees(cfg.sun.ra - cfg.greenwich.sidereal_time())
+    sun = ephem.Sun()
+    sun.compute()
+    sun_lon = math.degrees(sun.ra - cfg.greenwich.sidereal_time())
     if sun_lon < -180.0:
         sun_lon = 360.0 + sun_lon
     elif sun_lon > 180.0:
         sun_lon = sun_lon - 360.0
-    sun_lat = math.degrees(cfg.sun.dec)
+    sun_lat = math.degrees(sun.dec)
     # print ("Subsolar Point",sun_lon,sun_lat)
     lightsArray = getPointWithinDist(sun_lat, sun_lon, cfg.sunLightRadius,
-                                     cfg.pointArray)
+                                     pointArray)
     sunArray = []
     for i in lightsArray:
         sunArray.append((i, cfg.sunLightColor))
         # print("sun: ", pointArray[i])
     return sunArray
+    
+def strlocatesun():
+    sun = ephem.Sun()
+    #sun.compute()
+    detroit = ephem.Observer()
+    detroit.pressure = 0
+    detroit.horizon = '-0:34'
+    detroit.lat, detroit.lon = '42.3314', '-83.0458'  # use strings for degrees!
+    lt = datetime.datetime.utcnow()#'2009/09/06 17:00' # noon EST
+    detroit.date = ephem.Date(lt.strftime('%Y/%m/%d'))    
+    today_rise = ephem.localtime(detroit.next_rising(sun))
+    today_set = ephem.localtime(detroit.next_setting(sun))
+    rise = today_rise.strftime('%I:%M %p')
+    set = today_set.strftime('%I:%M %p') 
 
+    # sun_lon = math.degrees(cfg.sun.ra - cfg.greenwich.sidereal_time())
+    # if sun_lon < -180.0:
+        # sun_lon = 360.0 + sun_lon
+    # elif sun_lon > 180.0:
+        # sun_lon = sun_lon - 360.0
+    # sun_lat = math.degrees(cfg.sun.dec)
+    ##print ("Subsolar Point",sun_lon,sun_lat)
+    # lightsArray = getPointWithinDist(sun_lat, sun_lon, cfg.sunLightRadius,
+                                     # pointArray)
+    # sunArray = []
+    # for i in lightsArray:
+        # sunArray.append((i, cfg.sunLightColor))
+        ##print("sun: ", pointArray[i])
+    locationmsg1 = ("Sunrise: %s" % (rise))
+    locationmsg2 = (" Sunset: %s" % (set))
+    return locationmsg1, locationmsg2
+
+    return None
 
 def lightMoon(pointArray):
     cfg.moon.compute()
-    moonlon = cfg.moon.hlon / degree
-    moonlat = cfg.moon.hlat / degree
+    moonlon = cfg.moon.hlon / ephem.degree
+    moonlat = cfg.moon.hlat / ephem.degree
     # print(moonLightRadius)
     lightsArray = getPointWithinDist(moonlat, moonlon, cfg.moonLightRadius,
                                      pointArray)
@@ -399,17 +438,17 @@ def strlocateiss():
     line3 = tle[2]
     iss = ephem.readtle(line1, line2, line3)
     iss.compute()
-    isslong = round((iss.sublong / degree), 1)
+    isslong = round((iss.sublong / ephem.degree), 1)
     if (isslong >= 0):
         isslong = str(isslong) + " E"
     else:
         isslong = str(abs(isslong)) + " W"
-    isslat = round((iss.sublat / degree), 1)
+    isslat = round((iss.sublat / ephem.degree), 1)
     if (isslat >= 0):
         isslat = str(isslat) + " N"
     else:
         isslat = str(abs(isslat)) + " S"
-    locationmsg1 = ("ISS Lat: %s" % (isslat))
+    locationmsg1 = (" ISS Lat: %s" % (isslat))
     locationmsg2 = (" Lon: %s" % (isslong))
     return locationmsg1, locationmsg2
 

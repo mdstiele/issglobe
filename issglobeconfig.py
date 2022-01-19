@@ -36,14 +36,12 @@ isrunningonreplit = True
 
 # set the Trackable objects here and set their settings
 degrees_per_radian = 180.0 / math.pi
-sun = ephem.Sun()
-moon = ephem.Moon()
 greenwich = ephem.Observer()
 greenwich.lat = "0"
 greenwich.lon = "0"
 sunLightRadius = ephem.earth_radius/1000 * 1.5 #earth radius should mean about 50% coverage
 moonLightRadius = (ephem.earth_radius/1000)*.33 #1/3 earth radius
-sunLightColor = Color(255,255,200) #yellow white
+sunLightColor = Color(120,120,0) #yellow white
 moonLightColor = Color(255,0,255) #light blue
 issLightColor = Color(0,255,0) #red
 totalNumLed = 40 #total number of leds on system

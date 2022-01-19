@@ -27,8 +27,8 @@ class lcd:
     self.mylcd.lcd_display_string_pos("IssGlobe v0.1",2,4) # row 2, column 4
 
   def printmsg(self, line1, line2):
-    self.mylcd.lcd_display_string_pos(str(line1),1,4) # row 1, column 4
-    self.mylcd.lcd_display_string_pos(str(line2),2,4) # row 2, column 4
+    self.mylcd.lcd_display_string_pos(str(line1),1,3) # row 1, column 3
+    self.mylcd.lcd_display_string_pos(str(line2),2,3) # row 2, column 3
 
   def printicon(self):
     self.loadcustomchar()
